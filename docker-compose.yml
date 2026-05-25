@@ -1,12 +1,13 @@
 services:
-  web_add:
+  azziop_app:
     build: .
-    container_name: add-web
+    container_name: azziop_app
+
     restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      NODE_ENV: production
+
+    expose:
+      - "3000"
+
     networks:
       - web
 
