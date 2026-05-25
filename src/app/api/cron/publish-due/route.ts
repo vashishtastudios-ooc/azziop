@@ -10,21 +10,13 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * Cron endpoint that publishes every scheduled post whose time has arrived,
- * across every user — not just whoever happens to be online.
+ * HTTP cron: publishes scheduled posts that are due (all users).
  *
- * Schedulers that hit this endpoint:
- *   - Local dev:      src/instrumentation.ts runs an in-process timer every 5 min.
- *   - Vercel:         vercel.json -> { crons: [{ path: "/api/cron/publish-due", schedule: "*\/5 * * * *" }] }
- *   - Self-hosted:    any cron/QStash/GitHub Action that can GET/POST this URL.
+ * Call from VPS/system cron, e.g. every 5 minutes:
+ *   curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://your-domain/api/cron/publish-due
  *
- * Auth model:
- *   - In production, the caller MUST send `Authorization: Bearer <CRON_SECRET>`.
- *     Vercel Cron does this automatically using the CRON_SECRET env var.
- *   - In development, we also accept `x-vercel-cron: 1` (sent by the
- *     instrumentation hook) so you don't have to configure a secret locally.
- *
- * Both GET and POST are allowed so that every cron provider works out of the box.
+ * In production, CRON_SECRET is required. In development, unauthenticated calls are allowed
+ * when CRON_SECRET is unset (do not deploy without a secret).
  */
 async function handle(req: NextRequest) {
   const isAuthorized = checkAuth(req);
@@ -51,15 +43,6 @@ async function handle(req: NextRequest) {
 
 function checkAuth(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET?.trim();
-
-  // Internal trigger from the dev instrumentation hook — only honored when
-  // NODE_ENV is NOT production, so a public caller can't spoof it in prod.
-  if (
-    process.env.NODE_ENV !== "production" &&
-    req.headers.get("x-internal-cron") === "1"
-  ) {
-    return true;
-  }
 
   if (!secret) {
     // No secret configured. Allow only in development; hard-fail in production
