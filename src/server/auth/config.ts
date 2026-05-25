@@ -146,6 +146,7 @@ if (isGoogleAuthEnabled) {
 }
 
 export const authConfig = {
+  trustHost: true,
   providers,
   pages: {
     signIn: "/login",
