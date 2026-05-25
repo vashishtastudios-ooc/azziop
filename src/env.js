@@ -33,10 +33,9 @@ export const env = createEnv({
     RAZORPAY_PLAN_AGENCY_MONTHLY: z.string().optional(),
     RAZORPAY_PLAN_AGENCY_YEARLY: z.string().optional(),
     RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
-    // Secret used to authenticate calls to /api/cron/*. Required in production.
-    // Vercel Cron sends this automatically as `Authorization: Bearer $CRON_SECRET`
-    // when the env var is set on the project.
-    CRON_SECRET: isProd ? z.string().min(16) : z.string().optional(),
+    // Secret for /api/cron/* — validated at request time in production, not at build.
+    // Set on Vercel (min 16 chars); optional locally so `npm run build` works without it.
+    CRON_SECRET: z.string().min(16).optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),

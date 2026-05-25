@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { Suspense, useState, useCallback } from 'react'
 import Script from 'next/script'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
@@ -25,6 +25,20 @@ import {
 } from 'lucide-react'
 
 export default function RegisterPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center bg-surface-950">
+                    <Loader2 className="w-8 h-8 animate-spin text-[var(--hero-blue)]" />
+                </div>
+            }
+        >
+            <RegisterPageContent />
+        </Suspense>
+    )
+}
+
+function RegisterPageContent() {
     const [name, setName] = useState('')
     const [mobile, setMobile] = useState('')
     const [email, setEmail] = useState('')
