@@ -1,0 +1,236 @@
+// NoPain Marketing — Prisma Schema
+// AI Campaign Generator Data Model
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Authentication ───────────────────────────
+
+model User {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  email        String?   @unique
+  mobile       String?   @unique
+  passwordHash String?
+  avatarUrl    String?
+  metaAccessToken String?
+  metaTokenExpiresAt DateTime?
+  instagramBusinessAccountId String?
+  instagramUsername String?
+  facebookPageId String?
+  planId       String    @default("free")
+  billingInterval String?
+  subscriptionStatus String @default("active")
+  subscriptionPeriodEnd DateTime?
+  razorpayCustomerId String?
+  razorpaySubscriptionId String?
+  razorpayOrderId    String?
+  razorpayPaymentId  String?
+  bonusImageCredits  Int      @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  projects              Project[]
+  scheduledSocialPosts  ScheduledSocialPost[]
+  usageRecords          UsageRecord[]
+}
+
+// ─── Project (one per URL analysis) ───────────
+
+model Project {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+
+  /// The URL that was analyzed
+  url       String
+  status    String   @default("idle")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  websiteData  WebsiteData?
+  brandDNA     BrandDNA?
+  campaigns    Campaign[]
+  scheduledSocialPosts ScheduledSocialPost[]
+}
+
+// ─── Layer 1: Scraped Website Data ────────────
+
+model WebsiteData {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  projectId   String   @unique @db.ObjectId
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  url          String
+  title        String?
+  description  String?
+  brandName    String?
+  logo         String?
+  tagline      String?
+  heroText     String?
+  aboutSection String?
+  textContent  String?
+  contactEmail String?
+
+  keywords    String[]
+  images      String[]
+  colors      String[]
+  fonts       String[]
+  socialLinks String[]
+
+  createdAt   DateTime @default(now())
+}
+
+// ─── Layer 1: Brand DNA ───────────────────────
+
+model BrandDNA {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  projectId String  @unique @db.ObjectId
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  brandValues      String[]
+  brandAesthetic   String
+  brandToneOfVoice String[]
+  marketingBias    String[]
+  avoidList        String[]
+  positioning      String    // budget | mid | premium
+  audienceMindset  String    // aspirational | practical | emotional | status-driven
+  industry         String?
+  productType      String?
+
+  createdAt DateTime @default(now())
+}
+
+// ─── Layer 2: Campaign Strategy ───────────────
+
+model Campaign {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  projectId String  @db.ObjectId
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title             String
+  goal              String    // awareness | consideration | conversion
+  strategicAngle    String
+  narrativeHook     String
+  audiencePainPoint String
+  emotionalLever    String    // aspiration | fear | belonging | curiosity | pride | relief | urgency | trust
+  ctaStyle          String    // soft | medium | strong
+  visualDirection   String
+  bestPlatforms     String[]
+
+  setIndex          Int       @default(0)
+
+  creatives  Creative[]
+  scheduledSocialPosts ScheduledSocialPost[]
+  createdAt  DateTime   @default(now())
+}
+
+// ─── Layer 3: Social Creative ─────────────────
+
+model Creative {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  campaignId String   @db.ObjectId
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  headline         String
+  description      String
+  cta              String
+  layout           String
+  overlayStyle     String
+  colorMood        String
+  photographyStyle String
+  imageIntent      String
+  sceneElements    String[]
+  layoutTemplate   String?
+
+  // Text style (embedded)
+  fontWeight       String?
+  textAlignment    String?
+  textHierarchy    String?
+
+  imagePrompt      ImagePrompt?
+  generatedImage   GeneratedImage?
+  scheduledSocialPosts ScheduledSocialPost[]
+
+  createdAt        DateTime @default(now())
+}
+
+// ─── Social post scheduler (Instagram first) ───
+
+model ScheduledSocialPost {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String @db.ObjectId
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId  String @db.ObjectId
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  campaignId String @db.ObjectId
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creativeId String @db.ObjectId
+  creative   Creative @relation(fields: [creativeId], references: [id], onDelete: Cascade)
+
+  platform     String   @default("instagram")
+  imageUrl     String
+  caption      String
+  hashtags     String[] @default([])
+  firstComment String?
+  scheduledAt  DateTime
+  status       String   @default("scheduled")
+  publishedAt  DateTime?
+  instagramMediaId String?
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([scheduledAt])
+}
+
+// ─── Layer 4: Image Prompt ────────────────────
+
+model ImagePrompt {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  creativeId String   @unique @db.ObjectId
+  creative   Creative @relation(fields: [creativeId], references: [id], onDelete: Cascade)
+
+  prompt      String
+  aspectRatio String
+
+  createdAt   DateTime @default(now())
+}
+
+// ─── Layer 5-6: Generated Image ───────────────
+
+model GeneratedImage {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  creativeId String   @unique @db.ObjectId
+  creative   Creative @relation(fields: [creativeId], references: [id], onDelete: Cascade)
+
+  imageUrl   String
+  version    Int      @default(1)
+
+  createdAt  DateTime @default(now())
+}
+
+model UsageRecord {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthKey  String
+  campaigns Int      @default(0)
+  images    Int      @default(0)
+  projects  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, monthKey])
+  @@index([userId])
+}

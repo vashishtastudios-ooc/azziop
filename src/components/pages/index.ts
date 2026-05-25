@@ -1,0 +1,8 @@
+export { HomePage } from './HomePage';
+export { BrandDNAPage } from './BrandDNAPage';
+export { CampaignsPage } from './CampaignsPage';
+export { CreativesPage } from './CreativesPage';
+export { EditorPage } from './EditorPage';
+export { AboutPage } from './AboutPage';
+export { PricingPage } from './PricingPage';
+export { FAQPage } from './FAQPage';

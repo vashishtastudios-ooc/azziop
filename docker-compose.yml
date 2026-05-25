@@ -1,0 +1,15 @@
+services:
+  web_add:
+    build: .
+    container_name: add-web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
