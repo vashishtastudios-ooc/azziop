@@ -561,7 +561,7 @@ export function CreativesPage() {
   if (isLoadingCreativeData && (!creatives || creatives.length === 0)) {
     return (
       <div className="min-h-screen pt-20 pb-8 px-4 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-surface-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#FAD400]" />
       </div>
     );
   }
@@ -569,10 +569,10 @@ export function CreativesPage() {
   if (!creatives || creatives.length === 0) {
     return (
       <div className="min-h-screen pt-20 pb-8 px-4 flex flex-col items-center justify-center gap-4">
-        <p className="text-surface-400 text-sm">No creatives found for this project yet.</p>
+        <p className="text-neutral-600 text-sm">No creatives found for this project yet.</p>
         <button
           onClick={() => router.push(projectIdFromQuery ? `/campaigns?projectId=${projectIdFromQuery}` : '/campaigns')}
-          className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm"
+          className="px-4 py-2 rounded-xl bg-[#FAD400] hover:brightness-95 text-neutral-900 font-display font-semibold text-sm marketing-cta-glow"
         >
           Go To Campaigns
         </button>
@@ -601,8 +601,8 @@ export function CreativesPage() {
               className="absolute inset-0 w-full h-full object-cover"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-surface-800">
-              <ImageIcon className="w-12 h-12 text-surface-600" />
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-100">
+              <ImageIcon className="w-12 h-12 text-neutral-500" />
             </div>
           )}
 
@@ -873,8 +873,8 @@ export function CreativesPage() {
             {imageUrl ? (
               <img src={imageUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-surface-300 to-surface-400 flex items-center justify-center">
-                <ImageIcon className="w-10 h-10 text-surface-500" />
+              <div className="w-full h-full bg-gradient-to-br from-neutral-200 to-neutral-300 flex items-center justify-center">
+                <ImageIcon className="w-10 h-10 text-neutral-500" />
               </div>
             )}
           </div>
@@ -910,7 +910,7 @@ export function CreativesPage() {
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-8 px-4">
+    <div className="min-h-screen pt-8 pb-8 px-4 lg:px-8">
       <AnimatePresence>
         {showGenNotice && (
           <motion.div
@@ -922,16 +922,16 @@ export function CreativesPage() {
             className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
           >
             <div
-              className="flex flex-col items-center gap-4 px-8 py-6 rounded-2xl border border-surface-700/60 bg-surface-900/90 shadow-2xl pointer-events-auto text-center"
+              className="flex flex-col items-center gap-4 px-8 py-6 rounded-2xl border border-neutral-200 bg-white/95 shadow-2xl pointer-events-auto text-center"
               style={{ backdropFilter: 'blur(14px)', maxWidth: '420px', width: 'calc(100vw - 2rem)' }}
             >
-              <p className="text-surface-200 text-sm leading-relaxed" style={{ fontStyle: 'italic', fontWeight: 500 }}>
+              <p className="text-neutral-800 text-sm leading-relaxed" style={{ fontStyle: 'italic', fontWeight: 500 }}>
                 this will take a little while — go take a walk, talk to your gf, your daughter, or as a last resort, your wife 🚶
               </p>
               <button
                 type="button"
                 onClick={() => setShowGenNotice(false)}
-                className="text-xs text-surface-400 hover:text-white transition-colors px-4 py-1.5 rounded-lg border border-surface-700 hover:bg-surface-800"
+                className="text-xs text-neutral-600 hover:text-white transition-colors px-4 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-100"
               >
                 ok
               </button>
@@ -947,11 +947,11 @@ export function CreativesPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-cyan-500/10 mb-4">
-            <Palette className="w-6 h-6 text-cyan-400" />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#FAD400]/20 border border-[#FAD400]/30 mb-4">
+            <Palette className="w-6 h-6 text-neutral-900" />
           </div>
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Campaign</h1>
-          <p className="text-surface-400">
+          <h1 className="text-3xl font-display font-bold text-[#FAD400] mb-2">Campaign</h1>
+          <p className="text-neutral-600">
             Here is a series of creatives to post for this campaign.
             <br />
             You can edit, delete or generate more.
@@ -969,14 +969,14 @@ export function CreativesPage() {
             {/* Campaign Card */}
             <div className="card p-4">
               <div className="flex items-start gap-3 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-4 h-4 text-indigo-400" />
+                <div className="w-8 h-8 rounded-lg bg-[#FAD400]/15 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-4 h-4 text-[#FAD400]" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-white text-sm">{selectedCampaign?.title}</h3>
+                  <h3 className="font-display font-semibold text-[#FAD400] text-sm">{selectedCampaign?.title}</h3>
                 </div>
               </div>
-              <p className="text-xs text-surface-400 leading-relaxed">
+              <p className="text-xs text-neutral-600 leading-relaxed">
                 {selectedCampaign?.strategicAngle?.slice(0, 150)}...
               </p>
             </div>
@@ -987,11 +987,7 @@ export function CreativesPage() {
                 type="button"
                 onClick={handleGenerateAllImages}
                 disabled={isGeneratingImages}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:active:scale-100"
-                style={{
-                  background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%)',
-                  boxShadow: '0 4px 15px rgba(59, 130, 246, 0.35)',
-                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold text-sm marketing-cta-glow transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
               >
                 {isGeneratingImages ? (
                   <>
@@ -1007,15 +1003,15 @@ export function CreativesPage() {
               </button>
             )}
 
-            {/* Clone & Copy Button */}
             <button
               type="button"
-              onClick={() => { setShowCloneModal(true); setCloneReferenceImage(null); setCloneResult(null); setCloneError(null); }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f43f5e 100%)',
-                boxShadow: '0 4px 15px rgba(168, 85, 247, 0.3)',
+              onClick={() => {
+                setShowCloneModal(true);
+                setCloneReferenceImage(null);
+                setCloneResult(null);
+                setCloneError(null);
               }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <Copy className="w-4 h-4" />
               Clone & Copy
@@ -1028,34 +1024,31 @@ export function CreativesPage() {
                 setInfographicError(null);
                 setProductInfographicUrl('');
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm text-white transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: 'linear-gradient(135deg, #0ea5e9 0%, #22c55e 45%, #14b8a6 100%)',
-                boxShadow: '0 4px 15px rgba(14, 165, 233, 0.3)',
-              }}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <LayoutTemplate className="w-4 h-4" />
               Product Infographic
             </button>
 
-            {/* Animate Feature */}
-            <div className="card p-4 bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border-purple-500/20">
+            <div className="card p-4 bg-[#FAD400]/10 border-[#FAD400]/25">
               <div className="flex items-center gap-2 mb-2">
-                <Play className="w-4 h-4 text-purple-400" />
-                <span className="text-sm font-medium text-purple-300">Try Animate feature</span>
+                <Play className="w-4 h-4 text-[#FAD400]" />
+                <span className="text-sm font-display font-semibold text-neutral-900">
+                  Try Animate feature
+                </span>
               </div>
-              <p className="text-xs text-surface-400">
+              <p className="text-xs text-neutral-600 font-light">
                 Generate animations from your campaigns in one click!
               </p>
             </div>
           </motion.div>
 
-          {/* Creatives Grid — cell aspect follows layer-4 image prompt ratio */}
+          {/* Creatives Grid */}
           <div className="flex-1">
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {creatives.map((creative: SocialCreative, index: number) => {
                 const cellAspect = imageAspectRatioCss(
-                  imagePrompts?.find((p: ImagePrompt) => p.creativeIndex === index)?.aspectRatio
+                  imagePrompts?.find((p: ImagePrompt) => p.creativeIndex === index)?.aspectRatio,
                 );
                 return (
                   <motion.div
@@ -1063,40 +1056,47 @@ export function CreativesPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="group relative rounded-2xl overflow-hidden bg-surface-900 border border-surface-700/50 hover:border-indigo-500/60 transition-all cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-indigo-500/10"
+                    className="group relative rounded-2xl overflow-hidden bg-white border border-neutral-200 hover:border-[#FAD400]/50 transition-all cursor-pointer shadow-sm hover:shadow-md"
                     style={{ aspectRatio: cellAspect }}
                     onClick={() => handleEditCreative(index)}
                   >
                     {renderCreativeCard(index)}
 
-                    {/* Hover Actions — top right */}
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       <button
-                        onClick={(e) => { e.stopPropagation(); }}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
                         className="p-2 rounded-lg bg-black/50 hover:bg-black/70 text-white transition-colors backdrop-blur-sm"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </div>
 
-                    {/* Edit/Download Bar — bottom */}
                     <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       <div className="flex justify-center gap-2">
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); handleEditCreative(index); }}
-                          className="group/edit flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white text-surface-900 text-xs font-medium shadow-lg transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-950 hover:shadow-indigo-500/25 hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 active:scale-100 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/80"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditCreative(index);
+                          }}
+                          className="group/edit flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white text-neutral-900 text-xs font-medium shadow-lg transition-all duration-200 hover:bg-[#FAD400]/20 hover:shadow-md hover:scale-105"
                         >
-                          <Edit3 className="w-3 h-3 transition-transform duration-200 group-hover/edit:-rotate-6" />
+                          <Edit3 className="w-3 h-3" />
                           Edit
                         </button>
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); handleRegenerateCreative(index); }}
-                          className="group/regen flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-800 text-white text-xs font-medium shadow-lg transition-all duration-200 hover:bg-indigo-600 hover:shadow-indigo-500/30 hover:shadow-xl hover:scale-105 hover:-translate-y-0.5 active:scale-100 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/80"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRegenerateCreative(index);
+                          }}
+                          className="group/regen flex items-center gap-1 px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-medium shadow-lg transition-all duration-200 hover:bg-neutral-800 hover:scale-105"
                           title="Regenerate Image"
                         >
-                          <Wand2 className="w-3 h-3 transition-transform duration-200 group-hover/regen:rotate-12" />
+                          <Wand2 className="w-3 h-3" />
                         </button>
                       </div>
                     </div>
@@ -1104,22 +1104,22 @@ export function CreativesPage() {
                 );
               })}
 
-              {/* Add Creative Button */}
               <motion.button
+                type="button"
                 onClick={handleAddCreative}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: creatives.length * 0.1 }}
-                className="rounded-2xl border-2 border-dashed border-surface-600 hover:border-indigo-500 bg-surface-800/30 hover:bg-surface-800/50 transition-all flex flex-col items-center justify-center gap-3 text-surface-500 hover:text-indigo-400"
+                className="rounded-2xl border-2 border-dashed border-neutral-300 hover:border-[#FAD400] bg-neutral-50 hover:bg-white transition-all flex flex-col items-center justify-center gap-3 text-neutral-500 hover:text-[#FAD400]"
                 style={{
                   aspectRatio: imageAspectRatioCss(
                     imagePrompts?.find((p: ImagePrompt) => p.creativeIndex === 0)?.aspectRatio ??
-                      imagePrompts?.[0]?.aspectRatio
+                      imagePrompts?.[0]?.aspectRatio,
                   ),
                 }}
               >
                 <Plus className="w-8 h-8" />
-                <span className="text-sm font-medium">Add Creative</span>
+                <span className="text-sm font-display font-semibold">Add Creative</span>
               </motion.button>
             </div>
           </div>
@@ -1139,7 +1139,7 @@ export function CreativesPage() {
             onClick={() => setShowCloneModal(false)}
           >
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm" />
 
             {/* Modal */}
             <motion.div
@@ -1148,24 +1148,24 @@ export function CreativesPage() {
               exit={{ opacity: 0, y: 30, scale: 0.95 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-surface-700/50 bg-surface-900 shadow-2xl"
+              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-neutral-200 bg-white shadow-2xl"
             >
               {/* Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-surface-700/50 bg-surface-900/95 backdrop-blur-sm rounded-t-2xl">
+              <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-neutral-200 bg-white/95 backdrop-blur-sm rounded-t-2xl">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #a855f7, #ec4899)' }}>
                     <Copy className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">Clone & Copy</h2>
-                    <p className="text-xs text-surface-400">Choose a preset or upload your own — AI recreates it for your brand</p>
+                    <h2 className="text-lg font-display font-bold text-[#FAD400]">Clone & Copy</h2>
+                    <p className="text-xs text-neutral-600">Choose a preset or upload your own — AI recreates it for your brand</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowCloneModal(false)}
-                  className="p-2 rounded-lg hover:bg-surface-800 transition-colors"
+                  className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
                 >
-                  <X className="w-5 h-5 text-surface-400" />
+                  <X className="w-5 h-5 text-neutral-600" />
                 </button>
               </div>
 
@@ -1189,7 +1189,7 @@ export function CreativesPage() {
                               setCloneResult(null);
                               setCloneError(null);
                             }}
-                            className="group/preset relative rounded-xl overflow-hidden border-2 border-surface-700/50 hover:border-purple-500 transition-all hover:scale-[1.03] active:scale-[0.98]"
+                            className="group/preset relative rounded-xl overflow-hidden border-2 border-neutral-200 hover:border-purple-500 transition-all hover:scale-[1.03] active:scale-[0.98]"
                             style={{ aspectRatio: '1/1' }}
                           >
                             <img
@@ -1210,9 +1210,9 @@ export function CreativesPage() {
 
                     {/* Divider */}
                     <div className="flex items-center gap-3">
-                      <div className="flex-1 h-px bg-surface-700/50" />
-                      <span className="text-xs text-surface-500 uppercase tracking-wider">or upload your own</span>
-                      <div className="flex-1 h-px bg-surface-700/50" />
+                      <div className="flex-1 h-px bg-neutral-200" />
+                      <span className="text-xs text-neutral-500 uppercase tracking-wider">or upload your own</span>
+                      <div className="flex-1 h-px bg-neutral-200" />
                     </div>
 
                     {/* Upload Area */}
@@ -1223,7 +1223,7 @@ export function CreativesPage() {
                       onClick={() => cloneInputRef.current?.click()}
                       className={`relative flex flex-col items-center justify-center gap-3 p-8 rounded-xl border-2 border-dashed cursor-pointer transition-all ${isDragging
                         ? 'border-purple-500 bg-purple-500/10 scale-[1.02]'
-                        : 'border-surface-600 hover:border-purple-500/50 hover:bg-surface-800/50'
+                        : 'border-neutral-300 hover:border-purple-500/50 hover:bg-neutral-50'
                         }`}
                     >
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
@@ -1231,7 +1231,7 @@ export function CreativesPage() {
                       </div>
                       <div className="text-center">
                         <p className="text-white font-medium text-sm mb-0.5">Drop a reference creative here</p>
-                        <p className="text-xs text-surface-400">or click to browse — PNG, JPG, WebP</p>
+                        <p className="text-xs text-neutral-600">or click to browse — PNG, JPG, WebP</p>
                       </div>
                       <input
                         ref={cloneInputRef}
@@ -1254,15 +1254,15 @@ export function CreativesPage() {
                       {/* Reference Image */}
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium text-surface-400 uppercase tracking-wider">Reference</span>
+                          <span className="text-xs font-medium text-neutral-600 uppercase tracking-wider">Reference</span>
                           <button
                             onClick={() => { setCloneReferenceImage(null); setCloneResult(null); setCloneError(null); }}
-                            className="text-xs text-surface-500 hover:text-red-400 transition-colors"
+                            className="text-xs text-neutral-500 hover:text-red-400 transition-colors"
                           >
                             Change
                           </button>
                         </div>
-                        <div className="rounded-xl overflow-hidden border border-surface-700/50 bg-surface-800">
+                        <div className="rounded-xl overflow-hidden border border-neutral-200 bg-neutral-100">
                           <img
                             src={cloneReferenceImage}
                             alt="Reference creative"
@@ -1278,7 +1278,7 @@ export function CreativesPage() {
                             <span className="text-xs font-medium text-emerald-400 uppercase tracking-wider">Generated</span>
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                           </div>
-                          <div className="rounded-xl overflow-hidden border border-emerald-500/30 bg-surface-800">
+                          <div className="rounded-xl overflow-hidden border border-emerald-500/30 bg-neutral-100">
                             <img
                               src={cloneResult}
                               alt="Generated creative"
@@ -1294,13 +1294,13 @@ export function CreativesPage() {
                       <div className="flex flex-col items-center justify-center py-8 gap-4">
                         <div className="relative">
                           <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 animate-spin" style={{ animationDuration: '3s' }}>
-                            <div className="absolute inset-1 rounded-full bg-surface-900" />
+                            <div className="absolute inset-1 rounded-full bg-white" />
                           </div>
                           <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-purple-400" />
                         </div>
                         <div className="text-center">
                           <p className="text-white font-medium">Cloning creative...</p>
-                          <p className="text-sm text-surface-400 mt-1">AI is analyzing the reference and generating your brand version</p>
+                          <p className="text-sm text-neutral-600 mt-1">AI is analyzing the reference and generating your brand version</p>
                         </div>
                       </div>
                     )}
@@ -1319,10 +1319,7 @@ export function CreativesPage() {
                           onClick={handleCloneGenerate}
                           disabled={isCloning}
                           className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium text-white transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
-                          style={{
-                            background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f43f5e 100%)',
-                            boxShadow: '0 4px 15px rgba(168, 85, 247, 0.3)',
-                          }}
+                          
                         >
                           {isCloning ? (
                             <>
@@ -1340,7 +1337,7 @@ export function CreativesPage() {
                         <>
                           <button
                             onClick={handleCloneDownload}
-                            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium text-white bg-surface-700 hover:bg-surface-600 transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium text-white bg-neutral-200 hover:bg-neutral-300 transition-colors"
                           >
                             <Download className="w-4 h-4" />
                             Download
@@ -1349,10 +1346,7 @@ export function CreativesPage() {
                             onClick={handleCloneGenerate}
                             disabled={isCloning}
                             className="flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-medium text-white transition-all hover:scale-[1.02] disabled:opacity-50"
-                            style={{
-                              background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #f43f5e 100%)',
-                              boxShadow: '0 4px 15px rgba(168, 85, 247, 0.3)',
-                            }}
+                            
                           >
                             <Wand2 className="w-4 h-4" />
                             Regenerate
@@ -1377,28 +1371,26 @@ export function CreativesPage() {
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={() => !infographicLoading && setShowInfographicModal(false)}
           >
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm" />
             <motion.div
               initial={{ opacity: 0, y: 24, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 24, scale: 0.96 }}
               transition={{ type: 'spring', damping: 26, stiffness: 320 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-lg rounded-2xl border border-surface-700/50 bg-surface-900 shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg rounded-2xl border border-neutral-200 bg-white shadow-2xl overflow-hidden"
             >
-              <div className="flex items-start justify-between gap-3 p-5 border-b border-surface-700/50">
+              <div className="flex items-start justify-between gap-3 p-5 border-b border-neutral-200">
                 <div className="flex items-start gap-3">
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{
-                      background: 'linear-gradient(135deg, #0ea5e9, #22c55e)',
-                    }}
+                    
                   >
                     <LayoutTemplate className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white">Product Infographic</h2>
-                    <p className="text-xs text-surface-400 mt-1 leading-relaxed">
+                    <h2 className="text-lg font-display font-bold text-[#FAD400]">Product Infographic</h2>
+                    <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
                       We read your product page and rewrite creatives into infographic layouts. Next, the image model runs
                       automatically: it uses your project’s brand/product photos as references so the hero matches your
                       packaging.
@@ -1409,15 +1401,15 @@ export function CreativesPage() {
                   type="button"
                   disabled={infographicLoading}
                   onClick={() => setShowInfographicModal(false)}
-                  className="p-2 rounded-lg hover:bg-surface-800 transition-colors shrink-0 disabled:opacity-50"
+                  className="p-2 rounded-lg hover:bg-neutral-100 transition-colors shrink-0 disabled:opacity-50"
                 >
-                  <X className="w-5 h-5 text-surface-400" />
+                  <X className="w-5 h-5 text-neutral-600" />
                 </button>
               </div>
 
               <div className="p-5 space-y-4">
                 <div>
-                  <label htmlFor="product-infographic-url" className="block text-xs font-medium text-surface-400 mb-2">
+                  <label htmlFor="product-infographic-url" className="block text-xs font-medium text-neutral-600 mb-2">
                     Product page URL
                   </label>
                   <input
@@ -1427,7 +1419,7 @@ export function CreativesPage() {
                     onChange={(e) => setProductInfographicUrl(e.target.value)}
                     placeholder="https://yourstore.com/products/..."
                     disabled={infographicLoading}
-                    className="w-full rounded-xl border border-surface-600 bg-surface-800/80 px-4 py-3 text-sm text-white placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 disabled:opacity-50"
+                    className="w-full rounded-xl border border-neutral-300 bg-neutral-100 px-4 py-3 text-sm text-white placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/40 disabled:opacity-50"
                     autoComplete="url"
                   />
                 </div>
@@ -1438,7 +1430,7 @@ export function CreativesPage() {
                   </div>
                 )}
 
-                <p className="text-xs text-surface-500 leading-relaxed">
+                <p className="text-xs text-neutral-500 leading-relaxed">
                   Up to five slots get distinct layouts. After the brief is saved, infographic images generate automatically
                   (watch the sidebar for progress). Add product photos under Brand DNA / site images so the AI can anchor the
                   real bottle or pack.
@@ -1449,7 +1441,7 @@ export function CreativesPage() {
                     type="button"
                     disabled={infographicLoading}
                     onClick={() => setShowInfographicModal(false)}
-                    className="flex-1 px-4 py-3 rounded-xl font-medium text-sm text-surface-300 bg-surface-800 hover:bg-surface-700 transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-3 rounded-xl font-medium text-sm text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -1458,10 +1450,7 @@ export function CreativesPage() {
                     disabled={infographicLoading}
                     onClick={handleProductInfographicSubmit}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-medium text-sm text-white transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:hover:scale-100"
-                    style={{
-                      background: 'linear-gradient(135deg, #0ea5e9 0%, #22c55e 45%, #14b8a6 100%)',
-                      boxShadow: '0 4px 15px rgba(14, 165, 233, 0.25)',
-                    }}
+                    
                   >
                     {infographicLoading ? (
                       <>

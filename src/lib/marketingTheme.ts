@@ -20,3 +20,16 @@ export const MKT_LINK =
   'text-neutral-900 underline underline-offset-4 hover:text-[#FAD400] transition-colors';
 
 export const MKT_LEGAL_SUBHEAD = 'font-medium text-neutral-800 mb-2';
+
+/** Authenticated app (dashboard) — matches marketing light theme */
+export const APP_SHELL_BG = 'bg-neutral-50';
+
+export const APP_CARD = MKT_CARD;
+
+export const APP_BTN_PRIMARY = MKT_BTN_PRIMARY;
+
+export const APP_NAV_ACTIVE =
+  'bg-[#FAD400]/20 border-[#FAD400]/50 text-neutral-900 shadow-sm';
+
+export const APP_NAV_IDLE =
+  'border-transparent text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 hover:border-neutral-200';

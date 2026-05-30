@@ -290,3 +290,34 @@ body {
   background-size: 200% 100%;
   animation: marketing-shimmer 1.2s infinite linear;
 }
+
+/* ============================================
+   Authenticated app (light workspace)
+   ============================================ */
+
+.card {
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid rgb(229 229 229);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.app-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: 1px solid rgb(229 229 229);
+  border-radius: 0.75rem;
+  color: rgb(23 23 23);
+  font-weight: 300;
+}
+
+.app-input::placeholder {
+  color: rgb(163 163 163);
+}
+
+.app-input:focus {
+  outline: none;
+  border-color: #fad400;
+  box-shadow: 0 0 0 3px rgba(250, 212, 0, 0.25);
+}

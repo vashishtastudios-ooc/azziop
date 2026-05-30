@@ -31,6 +31,7 @@ import type { CampaignStrategy } from '@/types';
 import type { BrandDNA } from '@/types';
 import type { ImagePrompt } from '@/types';
 import { api } from '~/trpc/react';
+import { APP_BTN_PRIMARY, APP_CARD } from '~/lib/marketingTheme';
 
 const CREATIVE_ASPECT_OPTIONS: {
   value: ImagePrompt['aspectRatio'];
@@ -49,20 +50,35 @@ const goalIcons = {
 };
 
 const goalColors = {
-  awareness: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', gradient: 'from-blue-500/20 to-blue-600/20' },
-  consideration: { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400', gradient: 'from-purple-500/20 to-purple-600/20' },
-  conversion: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400', gradient: 'from-emerald-500/20 to-emerald-600/20' },
+  awareness: {
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    text: 'text-blue-700',
+    gradient: 'from-blue-50 to-sky-50',
+  },
+  consideration: {
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    text: 'text-violet-700',
+    gradient: 'from-violet-50 to-purple-50',
+  },
+  conversion: {
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    text: 'text-emerald-700',
+    gradient: 'from-emerald-50 to-teal-50',
+  },
 };
 
 const emotionalLevers = {
-  aspiration: { icon: Trophy, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-  fear: { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/10' },
-  belonging: { icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-  curiosity: { icon: HelpCircle, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-  pride: { icon: Trophy, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-  relief: { icon: Smile, color: 'text-green-400', bg: 'bg-green-500/10' },
-  urgency: { icon: Clock, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-  trust: { icon: Shield, color: 'text-teal-400', bg: 'bg-teal-500/10' },
+  aspiration: { icon: Trophy, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+  fear: { icon: AlertTriangle, color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
+  belonging: { icon: Users, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  curiosity: { icon: HelpCircle, color: 'text-cyan-700', bg: 'bg-cyan-50 border-cyan-200' },
+  pride: { icon: Trophy, color: 'text-violet-700', bg: 'bg-violet-50 border-violet-200' },
+  relief: { icon: Smile, color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
+  urgency: { icon: Clock, color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
+  trust: { icon: Shield, color: 'text-teal-700', bg: 'bg-teal-50 border-teal-200' },
 };
 
 const platformIcons: Record<string, React.ElementType> = {
@@ -95,8 +111,8 @@ function CampaignCard({
       className={`
         relative p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300
         ${isSelected
-          ? `${colors.border} bg-gradient-to-br ${colors.gradient} shadow-lg`
-          : 'border-surface-700 bg-surface-800/50 hover:border-surface-600 hover:bg-surface-800'
+          ? `${colors.border} bg-gradient-to-br ${colors.gradient} shadow-md ring-2 ring-[#FAD400]/30`
+          : 'border-neutral-200 bg-white hover:border-[#FAD400]/40 hover:shadow-sm'
         }
       `}
     >
@@ -105,9 +121,9 @@ function CampaignCard({
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#FAD400] flex items-center justify-center shadow-lg"
         >
-          <Check className="w-5 h-5 text-surface-900" />
+          <Check className="w-5 h-5 text-neutral-900" />
         </motion.div>
       )}
 
@@ -118,7 +134,7 @@ function CampaignCard({
           <span className={`text-sm font-medium ${colors.text} capitalize`}>{campaign.goal}</span>
         </div>
         {emotion && (
-          <div className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full ${emotion.bg} border border-white/5`}>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-full border ${emotion.bg}`}>
             <EmotionIcon className={`w-3.5 h-3.5 ${emotion.color}`} />
             <span className={`text-xs font-medium ${emotion.color} capitalize`}>{campaign.emotionalLever}</span>
           </div>
@@ -126,44 +142,58 @@ function CampaignCard({
       </div>
 
       {/* Title */}
-      <h3 className="text-xl font-display font-bold text-white mb-3">{campaign.title}</h3>
+      <h3 className="text-xl font-display font-bold text-[#FAD400] mb-3">{campaign.title}</h3>
 
       {/* Strategic Angle */}
-      <p className="text-surface-400 text-sm mb-4 leading-relaxed line-clamp-3">{campaign.strategicAngle}</p>
+      <p className="text-neutral-600 text-sm mb-4 leading-relaxed line-clamp-3 font-light">
+        {campaign.strategicAngle}
+      </p>
 
       {/* Pain Point (if available) */}
       {campaign.audiencePainPoint && (
-        <div className="text-xs text-surface-500 mb-4 flex items-start gap-1.5">
-          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 text-amber-500/70 shrink-0" />
-          <span><span className="text-amber-500/70 font-medium">Pain point:</span> {campaign.audiencePainPoint}</span>
+        <div className="text-xs text-neutral-500 mb-4 flex items-start gap-1.5 font-light">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 text-amber-600 shrink-0" />
+          <span>
+            <span className="text-amber-700 font-mono font-medium uppercase text-[10px] tracking-wide">
+              Pain point
+            </span>
+            : {campaign.audiencePainPoint}
+          </span>
         </div>
       )}
 
       {/* Narrative Hook */}
-      <div className="p-4 rounded-xl bg-surface-900/50 border border-surface-700/50 mb-4">
+      <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 mb-4">
         <div className="flex items-center gap-2 mb-2">
-          <Megaphone className="w-4 h-4 text-surface-500" />
-          <span className="text-xs text-surface-500 uppercase tracking-wide">Narrative Hook</span>
+          <Megaphone className="w-4 h-4 text-neutral-400" />
+          <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">
+            Narrative Hook
+          </span>
         </div>
-        <p className="text-surface-200 italic">"{campaign.narrativeHook}"</p>
+        <p className="text-neutral-700 italic font-light">&quot;{campaign.narrativeHook}&quot;</p>
       </div>
 
       {/* Visual Direction (if available) */}
       {campaign.visualDirection && (
-        <div className="text-xs text-surface-500 mb-4 flex items-start gap-1.5">
-          <Eye className="w-3.5 h-3.5 mt-0.5 text-indigo-400/70 shrink-0" />
-          <span><span className="text-indigo-400/70 font-medium">Visual:</span> {campaign.visualDirection}</span>
+        <div className="text-xs text-neutral-500 mb-4 flex items-start gap-1.5 font-light">
+          <Eye className="w-3.5 h-3.5 mt-0.5 text-neutral-600 shrink-0" />
+          <span>
+            <span className="font-mono font-medium uppercase text-[10px] tracking-wide text-neutral-700">
+              Visual
+            </span>
+            : {campaign.visualDirection}
+          </span>
         </div>
       )}
 
       {/* Footer: CTA + Platforms */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-surface-500" />
-          <span className="text-sm text-surface-500">CTA:</span>
-          <span className={`text-sm font-medium capitalize ${campaign.ctaStyle === 'strong' ? 'text-red-400' :
-            campaign.ctaStyle === 'medium' ? 'text-amber-400' : 'text-emerald-400'
-            }`}>
+          <Zap className="w-4 h-4 text-neutral-400" />
+          <span className="text-neutral-500 font-mono text-[10px] uppercase tracking-wide">CTA</span>
+          <span
+            className={`text-sm font-medium capitalize ${campaign.ctaStyle === 'strong' ? 'text-red-600' : campaign.ctaStyle === 'medium' ? 'text-amber-700' : 'text-emerald-700'}`}
+          >
             {campaign.ctaStyle}
           </span>
         </div>
@@ -174,9 +204,14 @@ function CampaignCard({
             {campaign.bestPlatforms.slice(0, 3).map((platform) => {
               const PlatformIcon = platformIcons[platform];
               return PlatformIcon ? (
-                <PlatformIcon key={platform} className="w-4 h-4 text-surface-500" />
+                <PlatformIcon key={platform} className="w-4 h-4 text-neutral-500" />
               ) : (
-                <span key={platform} className="text-[10px] text-surface-600 uppercase bg-surface-800 px-1.5 py-0.5 rounded">{platform.slice(0, 2)}</span>
+                <span
+                  key={platform}
+                  className="text-[10px] font-mono text-neutral-600 uppercase bg-neutral-100 px-1.5 py-0.5 rounded"
+                >
+                  {platform.slice(0, 2)}
+                </span>
               );
             })}
           </div>
@@ -202,7 +237,7 @@ function PastCampaignsSection({
       animate={{ opacity: 1, y: 0 }}
       className="mb-10"
     >
-      <h2 className="text-lg font-medium text-surface-300 mb-4">Past Campaigns</h2>
+      <h2 className="text-lg font-display font-semibold text-[#FAD400] mb-4">Past Campaigns</h2>
       <div className="flex flex-wrap gap-4">
         {previews.map((preview) => (
           <motion.button
@@ -210,10 +245,10 @@ function PastCampaignsSection({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={() => onViewCreatives(preview.id)}
-            className="group w-40 flex-shrink-0 rounded-2xl overflow-hidden border border-surface-700 bg-surface-800/60 hover:border-surface-500 hover:bg-surface-800 transition-all text-left"
+            className={`group w-40 flex-shrink-0 rounded-2xl overflow-hidden ${APP_CARD} text-left p-0 hover:shadow-md`}
           >
             {/* Thumbnail */}
-            <div className="relative w-full h-24 bg-surface-900 overflow-hidden">
+            <div className="relative w-full h-24 bg-neutral-100 overflow-hidden">
               {preview.firstImageUrl ? (
                 <img
                   src={preview.firstImageUrl}
@@ -222,17 +257,17 @@ function PastCampaignsSection({
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <ImageIcon className="w-7 h-7 text-surface-600" />
+                  <ImageIcon className="w-7 h-7 text-neutral-400" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             </div>
             {/* Info */}
             <div className="p-3">
-              <p className="text-xs font-semibold text-white leading-snug line-clamp-2">
+              <p className="text-xs font-display font-semibold text-neutral-900 leading-snug line-clamp-2">
                 {preview.title}
               </p>
-              <p className="text-[10px] text-surface-500 mt-1 flex items-center gap-1">
+              <p className="text-[10px] text-neutral-500 mt-1 flex items-center gap-1 font-mono">
                 View Creatives <ArrowRight className="w-3 h-3" />
               </p>
             </div>
@@ -264,7 +299,7 @@ function CampaignPromptSection({
       className="mb-10"
     >
       <div className="flex items-center justify-center gap-2 mb-4">
-        <span className="text-surface-300 text-sm font-medium">AI Campaign Generator</span>
+        <span className="text-[#FAD400] text-sm font-display font-semibold">AI Campaign Generator</span>
       </div>
 
       {/* Main prompt card */}
@@ -274,14 +309,16 @@ function CampaignPromptSection({
             value={promptText}
             onChange={(e) => setPromptText(e.target.value)}
             placeholder="Describe the campaign you want to create..."
-            className="w-full bg-transparent text-white placeholder-surface-500 px-5 py-4 resize-none focus:outline-none text-base leading-relaxed min-h-[80px]"
+            className="w-full bg-transparent text-neutral-900 placeholder-neutral-400 px-5 py-4 resize-none focus:outline-none text-base leading-relaxed min-h-[80px] font-light"
             rows={2}
             disabled={isGenerating}
           />
 
-          <div className="px-5 py-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-t border-surface-700/50">
+          <div className="px-5 py-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-t border-neutral-200">
             <div className="min-w-0">
-              <p className="text-xs text-surface-500 mb-2 font-medium">Creative aspect ratio</p>
+              <p className="text-[10px] font-mono text-neutral-500 mb-2 uppercase tracking-wider">
+                Creative aspect ratio
+              </p>
               <div className="flex flex-wrap gap-2">
                 {CREATIVE_ASPECT_OPTIONS.map((opt) => {
                   const selected = aspectRatio === opt.value;
@@ -292,15 +329,15 @@ function CampaignPromptSection({
                       onClick={() => onAspectRatioChange(opt.value)}
                       disabled={isGenerating}
                       className={`
-                        px-3 py-2 rounded-xl text-xs font-medium border transition-all disabled:opacity-50
+                        px-3 py-2 rounded-xl text-xs border transition-all disabled:opacity-50 font-mono
                         ${selected
-                          ? 'border-purple-500/60 bg-purple-500/15 text-white ring-1 ring-purple-500/30'
-                          : 'border-surface-600 bg-surface-800/80 text-surface-400 hover:border-surface-500 hover:text-surface-200'
+                          ? 'border-[#FAD400] bg-[#FAD400]/15 text-neutral-900 ring-1 ring-[#FAD400]/40 font-medium'
+                          : 'border-neutral-200 bg-neutral-50 text-neutral-600 hover:border-neutral-300 hover:text-neutral-900'
                         }
                       `}
                     >
-                      <span>{opt.label}</span>
-                      <span className="text-surface-500 ml-1">({opt.ratio})</span>
+                      <span className="font-display font-semibold">{opt.label}</span>
+                      <span className="text-neutral-400 ml-1">({opt.ratio})</span>
                     </button>
                   );
                 })}
@@ -311,7 +348,7 @@ function CampaignPromptSection({
               type="button"
               onClick={() => onGenerate(promptText)}
               disabled={isGenerating}
-              className="flex shrink-0 items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
+              className={`flex shrink-0 items-center justify-center gap-2 px-5 py-2.5 rounded-xl ${APP_BTN_PRIMARY} disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0`}
             >
               {isGenerating ? (
                 <>
@@ -329,7 +366,7 @@ function CampaignPromptSection({
         </BorderBeam>
 
         {/* Disclaimer */}
-        <p className="text-center text-surface-500 text-xs mt-3">
+        <p className="text-center text-neutral-500 text-xs mt-3 font-light">
           AI can make mistakes, so double-check it.
         </p>
 
@@ -338,9 +375,10 @@ function CampaignPromptSection({
           {['Valentine\'s Day', 'Black Friday', 'Summer Sale', 'Product Launch', 'Brand Awareness'].map((chip) => (
             <button
               key={chip}
+              type="button"
               onClick={() => setPromptText(chip + ' campaign')}
               disabled={isGenerating}
-              className="px-3 py-1.5 rounded-full text-xs font-medium text-surface-400 bg-surface-800 border border-surface-700 hover:border-surface-500 hover:text-surface-300 transition-colors disabled:opacity-50"
+              className="px-3 py-1.5 rounded-full text-xs font-light text-neutral-600 bg-white border border-neutral-200 hover:border-[#FAD400]/50 hover:text-neutral-900 transition-colors disabled:opacity-50"
             >
               {chip}
             </button>
@@ -528,7 +566,7 @@ export function CampaignsPage() {
   if (isLoadingProjectData && !resolvedBrandDNA) {
     return (
       <div className="min-h-screen pt-20 pb-8 px-4 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-surface-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#FAD400]" />
       </div>
     );
   }
@@ -538,7 +576,7 @@ export function CampaignsPage() {
   const activeProjectId = projectId ?? projectIdFromQuery;
 
   return (
-    <div className="min-h-screen pt-20 pb-8 px-4">
+    <div className="min-h-screen pt-8 pb-8 px-4 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Page Header */}
         <motion.div
@@ -546,8 +584,8 @@ export function CampaignsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Campaign Strategies</h1>
-          <p className="text-surface-400">
+          <h1 className="text-3xl font-display font-bold text-[#FAD400] mb-2">Campaign Strategies</h1>
+          <p className="text-neutral-600 font-light">
             Generate campaign ideas or select one to create social media creatives
           </p>
         </motion.div>
@@ -556,32 +594,35 @@ export function CampaignsPage() {
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 rounded-2xl border border-surface-700 bg-surface-900/60 p-4"
+            className={`mb-8 p-4 ${APP_CARD}`}
           >
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm text-surface-300">
-                Plan: <span className="font-semibold capitalize text-white">{billingInfo.planId}</span>
+              <p className="text-sm text-neutral-600 font-light">
+                Plan:{' '}
+                <span className="font-display font-semibold capitalize text-neutral-900">
+                  {billingInfo.planId}
+                </span>
               </p>
               <button
                 type="button"
                 onClick={() => router.push('/pricing')}
-                className="text-xs text-indigo-400 hover:text-indigo-300"
+                className="text-xs font-display font-semibold text-neutral-900 hover:text-[#FAD400] transition-colors"
               >
                 Upgrade
               </button>
             </div>
             <div className="space-y-3">
               <div>
-                <div className="mb-1 flex justify-between text-xs text-surface-400">
+                <div className="mb-1 flex justify-between text-xs text-neutral-500 font-mono">
                   <span>Credits</span>
                   <span>
                     {billingInfo.creditBalance.toLocaleString()} /{' '}
                     {billingInfo.monthlyCredits.toLocaleString()} per cycle
                   </span>
                 </div>
-                <div className="h-2 rounded bg-surface-800">
+                <div className="h-2 rounded bg-neutral-200">
                   <div
-                    className="h-2 rounded bg-amber-500"
+                    className="h-2 rounded bg-[#FAD400]"
                     style={{
                       width: `${Math.min(
                         100,
@@ -612,7 +653,7 @@ export function CampaignsPage() {
             animate={{ opacity: 1 }}
             className="mb-6"
           >
-            <h2 className="text-lg font-medium text-surface-300">Generated Campaigns</h2>
+            <h2 className="text-lg font-display font-semibold text-neutral-900">Generated Campaigns</h2>
           </motion.div>
         )}
 
@@ -645,20 +686,22 @@ export function CampaignsPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="sticky top-20 z-20 mt-2 mb-10 rounded-2xl border border-surface-border glass p-4 sm:p-5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 shadow-lg shadow-black/20"
+            className={`sticky top-20 z-20 mt-2 mb-10 p-4 sm:p-5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 ${APP_CARD}`}
           >
-            <div className="text-sm text-surface-400 space-y-1 min-w-0">
+            <div className="text-sm text-neutral-600 space-y-1 min-w-0 font-light">
               {selectedCampaign ? (
                 <span>
                   Selected:{' '}
-                  <span className="text-white font-medium">{selectedCampaign.title}</span>
+                  <span className="font-display font-semibold text-neutral-900">
+                    {selectedCampaign.title}
+                  </span>
                 </span>
               ) : (
                 <span>Select a campaign to continue</span>
               )}
-              <p className="text-xs text-surface-500">
+              <p className="text-xs text-neutral-500 font-mono">
                 Image format:{' '}
-                <span className="text-surface-300">
+                <span className="text-neutral-700">
                   {CREATIVE_ASPECT_OPTIONS.find((o) => o.value === creativeAspectRatio)?.label ?? 'Square'}{' '}
                   ({creativeAspectRatio})
                 </span>
@@ -668,17 +711,7 @@ export function CampaignsPage() {
               type="button"
               onClick={handleContinue}
               disabled={!selectedCampaign || isGenerating}
-              className={[
-                'group relative shrink-0 w-full sm:w-auto min-h-[48px] px-6 py-3 rounded-xl',
-                'inline-flex items-center justify-center gap-2 font-semibold text-sm text-white',
-                'bg-gradient-to-r from-violet-600 via-fuchsia-600 to-purple-600',
-                'shadow-lg shadow-violet-500/30 ring-1 ring-white/20',
-                'transition-all duration-200 ease-out',
-                'hover:shadow-xl hover:shadow-fuchsia-500/35 hover:ring-white/30 hover:-translate-y-0.5 hover:brightness-110',
-                'active:translate-y-0 active:scale-[0.98] active:brightness-95 active:shadow-md',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-900',
-                'disabled:opacity-45 disabled:pointer-events-none disabled:hover:translate-y-0 disabled:hover:shadow-lg disabled:active:scale-100',
-              ].join(' ')}
+              className={`group relative shrink-0 w-full sm:w-auto min-h-[48px] ${APP_BTN_PRIMARY} disabled:opacity-45 disabled:pointer-events-none disabled:hover:translate-y-0`}
             >
               {isGenerating ? (
                 <>
@@ -703,11 +736,11 @@ export function CampaignsPage() {
             animate={{ opacity: 1 }}
             className="text-center py-16"
           >
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-surface-800 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-surface-600" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#FAD400]/20 border border-[#FAD400]/30 flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-neutral-700" />
             </div>
-            <h3 className="text-lg font-medium text-surface-400 mb-2">No campaigns yet</h3>
-            <p className="text-surface-500 text-sm">
+            <h3 className="text-lg font-display font-semibold text-neutral-700 mb-2">No campaigns yet</h3>
+            <p className="text-neutral-500 text-sm font-light">
               Click "Suggest Ideas" to generate campaign strategies
             </p>
           </motion.div>
@@ -731,30 +764,30 @@ export function CampaignsPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/40 px-4"
             >
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="w-full max-w-md rounded-2xl border border-surface-700 bg-surface-900 p-6"
+                className={`w-full max-w-md p-6 ${APP_CARD}`}
               >
-                <h3 className="mb-2 text-xl font-semibold text-white">Upgrade Required</h3>
-                <p className="mb-5 text-sm text-surface-400">
+                <h3 className="mb-2 text-xl font-display font-bold text-[#FAD400]">Upgrade Required</h3>
+                <p className="mb-5 text-sm text-neutral-600 font-light">
                   {upgradeReason || 'Your current plan limit is reached for this action.'}
                 </p>
                 <div className="flex justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setShowUpgradeModal(false)}
-                    className="rounded-lg border border-surface-700 px-4 py-2 text-sm text-surface-300"
+                    className="rounded-lg border border-neutral-300 px-4 py-2 text-sm text-neutral-700 font-light hover:bg-neutral-50"
                   >
                     Close
                   </button>
                   <button
                     type="button"
                     onClick={() => router.push('/pricing')}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white"
+                    className={`rounded-lg px-4 py-2 text-sm ${APP_BTN_PRIMARY}`}
                   >
                     View Pricing
                   </button>

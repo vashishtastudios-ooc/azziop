@@ -65,21 +65,21 @@ export default function DashboardPage() {
   }, [sessionStatus, projects, isLoadingProjects, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-950">
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 font-body font-light">
       <div className="w-full max-w-md text-center px-4">
-        <Loader2 className="mx-auto mb-3 w-8 h-8 animate-spin text-[var(--hero-blue)]" />
-        <p className="text-sm text-surface-400">Loading your dashboard...</p>
+        <Loader2 className="mx-auto mb-3 w-8 h-8 animate-spin text-[#FAD400]" />
+        <p className="text-sm text-neutral-600">Loading your dashboard...</p>
         {billingInfo && (
-          <div className="mt-6 rounded-xl border border-surface-800 bg-surface-900/70 p-4 text-left">
-            <p className="mb-3 text-xs uppercase tracking-wide text-surface-500">
+          <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-4 text-left shadow-sm">
+            <p className="mb-3 text-xs font-mono uppercase tracking-wide text-neutral-500">
               {billingInfo.planId} plan
             </p>
-            <p className="mb-1 text-sm text-white font-semibold">
+            <p className="mb-1 text-sm font-display font-semibold text-neutral-900">
               {billingInfo.creditBalance.toLocaleString()} credits available
             </p>
-            <div className="mb-2 h-2 rounded bg-surface-800">
+            <div className="mb-2 h-2 rounded bg-neutral-200">
               <div
-                className="h-2 rounded bg-amber-500"
+                className="h-2 rounded bg-[#FAD400]"
                 style={{
                   width: `${Math.min(
                     100,
@@ -90,7 +90,7 @@ export default function DashboardPage() {
                 }}
               />
             </div>
-            <p className="text-xs text-surface-400">
+            <p className="text-xs text-neutral-500 font-mono">
               {billingInfo.monthlyCredits.toLocaleString()} credits / cycle on this plan
             </p>
           </div>

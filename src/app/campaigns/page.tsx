@@ -11,7 +11,7 @@ import { AuthenticatedShell } from '../../components/AuthenticatedShell';
 function CampaignsPageFallback() {
   return (
     <div className="min-h-screen pt-20 pb-24 px-4 flex items-center justify-center">
-      <div className="text-surface-400">Loading campaigns...</div>
+      <div className="text-neutral-500 font-light">Loading campaigns...</div>
     </div>
   );
 }
@@ -28,8 +28,8 @@ export default function Page() {
 
   if (sessionStatus === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-950">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--hero-blue)]" />
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <Loader2 className="w-8 h-8 animate-spin text-[#FAD400]" />
       </div>
     );
   }

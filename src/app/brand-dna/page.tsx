@@ -85,8 +85,8 @@ function BrandDNARoutePageContent() {
 
   if (sessionStatus === 'loading' || isLoadingProject) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-950">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--hero-blue)]" />
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <Loader2 className="w-8 h-8 animate-spin text-[#FAD400]" />
       </div>
     );
   }
@@ -98,13 +98,14 @@ function BrandDNARoutePageContent() {
   if (!project?.id || !project.websiteData || !project.brandDNA) {
     return (
       <AuthenticatedShell>
-        <div className="min-h-screen bg-surface-950 pt-8 px-4">
-          <div className="max-w-3xl mx-auto rounded-2xl border border-surface-800 bg-surface-900/40 p-8 text-center">
-            <h1 className="text-2xl font-display font-bold text-white mb-2">No Brand Data Found</h1>
-            <p className="text-surface-400 mb-6">Create or open a project first to view Brand DNA.</p>
+        <div className="min-h-screen pt-8 px-4 lg:px-8">
+          <div className="max-w-3xl mx-auto card p-8 text-center">
+            <h1 className="text-2xl font-display font-bold text-[#FAD400] mb-2">No Brand Data Found</h1>
+            <p className="text-neutral-600 mb-6 font-light">Create or open a project first to view Brand DNA.</p>
             <button
+              type="button"
               onClick={() => router.push('/projects')}
-              className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white"
+              className="px-5 py-2.5 rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold marketing-cta-glow hover:brightness-95"
             >
               Go To Projects
             </button>
@@ -118,13 +119,13 @@ function BrandDNARoutePageContent() {
     <AuthenticatedShell>
       {(project.campaignCount ?? 0) > 0 && (
         <div className="pt-4 px-4">
-          <div className="max-w-7xl mx-auto mb-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 flex items-center justify-between gap-4">
-            <p className="text-xs md:text-sm text-emerald-200">
+          <div className="max-w-7xl mx-auto mb-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 flex items-center justify-between gap-4">
+            <p className="text-xs md:text-sm text-emerald-800 font-light">
               Existing campaigns found for this project: {project.campaignSetCount} sets, {project.campaignCount} campaigns.
             </p>
             <button
               onClick={() => router.push(`/campaigns?projectId=${project.id}`)}
-              className="text-xs md:text-sm px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-surface-950 font-semibold"
+              className="text-xs md:text-sm px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-display font-semibold"
             >
               View Campaigns
             </button>

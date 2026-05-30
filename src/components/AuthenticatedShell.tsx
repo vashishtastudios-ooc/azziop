@@ -6,11 +6,24 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { FolderOpen, Dna, Target, LogOut, ChevronDown, Sparkles, Menu, X, CalendarClock, CreditCard, Coins } from 'lucide-react';
+import {
+  FolderOpen,
+  Dna,
+  Target,
+  LogOut,
+  ChevronDown,
+  Sparkles,
+  Menu,
+  X,
+  CalendarClock,
+  CreditCard,
+  Coins,
+} from 'lucide-react';
 import { usePipelineStore } from '@/store/pipeline';
 import type { WebsiteData } from '@/types';
 import { api } from '~/trpc/react';
 import { UserAvatar } from '~/components/UserAvatar';
+import { APP_NAV_ACTIVE, APP_NAV_IDLE, APP_SHELL_BG } from '~/lib/marketingTheme';
 
 function resolveWorkspaceBrandName(
   websiteData: Pick<WebsiteData, 'brandName' | 'title'> | null | undefined,
@@ -110,10 +123,8 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
   }, []);
 
   const userName = profile?.name ?? session?.user?.name ?? 'User';
-  const userSecondary =
-    profile?.email ?? session?.user?.email ?? session?.user?.mobile ?? '';
-  const avatarUrl =
-    profile?.avatarUrl ?? session?.user?.image ?? null;
+  const userSecondary = profile?.email ?? session?.user?.email ?? session?.user?.mobile ?? '';
+  const avatarUrl = profile?.avatarUrl ?? session?.user?.image ?? null;
 
   const handleSignOut = async () => {
     setMenuOpen(false);
@@ -123,37 +134,44 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
   };
 
   const Sidebar = (
-    <aside className="h-full bg-surface-900/80 backdrop-blur-xl border-r border-surface-800/60">
-      <div className="h-16 px-4 border-b border-surface-800/60 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-white" />
+    <aside className="h-full bg-white border-r border-neutral-200">
+      <div className="h-16 px-4 border-b border-neutral-200 flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg bg-[#FAD400] flex items-center justify-center shrink-0">
+          <Sparkles className="w-4 h-4 text-neutral-900" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-white text-sm font-semibold leading-none truncate" title={workspaceBrandLine ?? 'Azziop'}>
+          <p
+            className="font-display font-bold text-neutral-900 text-sm leading-none truncate"
+            title={workspaceBrandLine ?? 'Azziop'}
+          >
             {workspaceBrandLine ?? 'Azziop'}
           </p>
-          <p className="text-surface-500 text-[11px] mt-1">Workspace</p>
+          <p className="text-neutral-500 text-[10px] font-mono uppercase tracking-wider mt-1">
+            Workspace
+          </p>
         </div>
       </div>
 
       <nav className="p-3 space-y-1.5">
         {items.map(({ label, href, icon: Icon }) => {
-          const active =
-            normalizePath(pathname) === normalizePath(href.split('?')[0] || href);
+          const active = normalizePath(pathname) === normalizePath(href.split('?')[0] || href);
           return (
             <Link
               key={label}
               href={href}
               onClick={() => setMobileSidebarOpen(false)}
               className={[
-                'group flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-200',
-                active
-                  ? 'bg-indigo-500/15 border-indigo-500/35 text-white shadow-lg shadow-indigo-500/10'
-                  : 'bg-transparent border-transparent text-surface-400 hover:text-white hover:bg-surface-800/60 hover:border-surface-700',
+                'group flex items-center gap-3 px-3 py-2.5 rounded-xl border transition-all duration-200 font-light',
+                active ? APP_NAV_ACTIVE : APP_NAV_IDLE,
               ].join(' ')}
             >
-              <Icon className={['w-4 h-4', active ? 'text-indigo-300' : 'text-surface-500 group-hover:text-surface-300'].join(' ')} />
-              <span className="text-sm font-medium">{label}</span>
+              <Icon
+                className={[
+                  'w-4 h-4',
+                  active ? 'text-neutral-900' : 'text-neutral-400 group-hover:text-neutral-700',
+                ].join(' ')}
+              />
+              <span className="text-sm">{label}</span>
             </Link>
           );
         })}
@@ -162,86 +180,116 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="min-h-screen bg-surface-950">
-      <header className="fixed top-0 left-0 right-0 h-16 z-40 border-b border-surface-800/60 bg-surface-900/75 backdrop-blur-xl">
+    <div className={`min-h-screen ${APP_SHELL_BG} font-body font-light text-neutral-900`}>
+      <header
+        className="fixed top-0 left-0 right-0 h-16 z-40 border-b border-neutral-200/90 shadow-sm shadow-neutral-900/5"
+        style={{
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.88)',
+        }}
+      >
         <div className="h-full px-4 lg:px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => setMobileSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-surface-400 hover:text-white hover:bg-surface-800/70"
+              className="lg:hidden p-2 rounded-lg text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
               aria-label="Open navigation"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <p className="text-surface-300 text-sm hidden sm:block truncate max-w-[260px]">
-              {workspaceBrandLine ? `${workspaceBrandLine} workspace` : 'Logged-in Workspace'}
+            <p className="text-neutral-600 text-sm hidden sm:block truncate max-w-[260px] font-light">
+              {workspaceBrandLine ? (
+                <>
+                  <span className="font-display font-semibold text-neutral-900">
+                    {workspaceBrandLine}
+                  </span>{' '}
+                  workspace
+                </>
+              ) : (
+                'Logged-in workspace'
+              )}
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <Link
               href="/credits"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-200 bg-amber-500/15 border border-amber-400/30 hover:bg-amber-500/25 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-display font-semibold text-neutral-900 bg-[#FAD400]/20 border border-[#FAD400]/45 hover:bg-[#FAD400]/30 transition-colors"
               title="View credit activity"
             >
-              <Coins className="w-3.5 h-3.5" />
+              <Coins className="w-3.5 h-3.5 text-neutral-800" />
               {typeof profile?.creditBalance === 'number'
                 ? profile.creditBalance.toLocaleString()
                 : '—'}
-              <span className="hidden sm:inline">credits</span>
+              <span className="hidden sm:inline font-mono font-normal text-[11px] tracking-wide">
+                credits
+              </span>
             </Link>
 
             <Link
               href="/pricing"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-indigo-200 bg-indigo-500/15 border border-indigo-400/30 hover:bg-indigo-500/25 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-display font-semibold text-neutral-800 border border-neutral-300 bg-white hover:border-neutral-400 transition-colors"
             >
               <CreditCard className="w-3.5 h-3.5" />
               Upgrade
             </Link>
 
             <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setMenuOpen((prev) => !prev)}
-              className="group flex items-center gap-2 px-2.5 py-2 rounded-2xl border border-surface-700/70 bg-surface-800/60 hover:bg-surface-800/85 hover:border-surface-600 transition-all shadow-sm hover:shadow-lg hover:shadow-black/20"
-              aria-label="Open account menu"
-            >
-              <UserAvatar name={userName} avatarUrl={avatarUrl} />
-              <ChevronDown className={['w-4 h-4 text-surface-500 group-hover:text-surface-300 transition-transform', menuOpen ? 'rotate-180' : ''].join(' ')} />
-            </button>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((prev) => !prev)}
+                className="group flex items-center gap-2 px-2.5 py-2 rounded-2xl border border-neutral-200 bg-white hover:bg-neutral-50 hover:border-neutral-300 transition-all shadow-sm"
+                aria-label="Open account menu"
+              >
+                <UserAvatar name={userName} avatarUrl={avatarUrl} />
+                <ChevronDown
+                  className={[
+                    'w-4 h-4 text-neutral-400 group-hover:text-neutral-600 transition-transform',
+                    menuOpen ? 'rotate-180' : '',
+                  ].join(' ')}
+                />
+              </button>
 
-            <AnimatePresence>
-              {menuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                  transition={{ duration: 0.14 }}
-                  className="absolute right-0 mt-2 w-56 rounded-xl border border-surface-700/60 bg-surface-800/95 backdrop-blur-xl shadow-xl shadow-black/30 overflow-hidden"
-                >
-                  <div className="px-4 py-3 border-b border-surface-700/60">
-                    <p className="text-sm font-medium text-white truncate">{userName}</p>
-                    <p className="text-xs text-surface-400 truncate mt-1">{userSecondary || 'Signed in'}</p>
-                  </div>
-
-                  <Link
-                    href="/pricing"
-                    onClick={() => setMenuOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-surface-300 hover:text-white hover:bg-surface-700/50 transition-colors border-b border-surface-700/40"
+              <AnimatePresence>
+                {menuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.97 }}
+                    transition={{ duration: 0.14 }}
+                    className="absolute right-0 mt-2 w-56 rounded-xl border border-neutral-200 bg-white shadow-xl overflow-hidden"
                   >
-                    <CreditCard className="w-4 h-4" />
-                    Pricing & Billing
-                  </Link>
+                    <div className="px-4 py-3 border-b border-neutral-100">
+                      <p className="text-sm font-display font-semibold text-neutral-900 truncate">
+                        {userName}
+                      </p>
+                      <p className="text-xs text-neutral-500 truncate mt-1 font-light">
+                        {userSecondary || 'Signed in'}
+                      </p>
+                    </div>
 
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <Link
+                      href="/pricing"
+                      onClick={() => setMenuOpen(false)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors border-b border-neutral-100"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      Pricing & Billing
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
@@ -253,11 +301,12 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
         {mobileSidebarOpen && (
           <>
             <motion.button
+              type="button"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileSidebarOpen(false)}
-              className="lg:hidden fixed inset-0 bg-black/55 z-40"
+              className="lg:hidden fixed inset-0 bg-neutral-900/30 z-40"
               aria-label="Close navigation backdrop"
             />
             <motion.div
@@ -265,12 +314,13 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
               animate={{ x: 0 }}
               exit={{ x: -320 }}
               transition={{ type: 'spring', damping: 25, stiffness: 260 }}
-              className="lg:hidden fixed top-0 left-0 bottom-0 w-72 z-50"
+              className="lg:hidden fixed top-0 left-0 bottom-0 w-72 z-50 shadow-xl"
             >
               <div className="absolute right-3 top-3 z-10">
                 <button
+                  type="button"
                   onClick={() => setMobileSidebarOpen(false)}
-                  className="p-2 rounded-lg text-surface-300 hover:text-white bg-surface-800/80"
+                  className="p-2 rounded-lg text-neutral-600 hover:text-neutral-900 bg-neutral-100"
                   aria-label="Close navigation"
                 >
                   <X className="w-4 h-4" />
@@ -282,7 +332,13 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
         )}
       </AnimatePresence>
 
-      <main className="pt-16 lg:pl-64">{children}</main>
+      <main className="pt-16 lg:pl-64 relative min-h-[calc(100vh-4rem)]">
+        <div
+          className="absolute inset-0 opacity-[0.25] pointer-events-none marketing-dot-grid"
+          aria-hidden
+        />
+        <div className="relative">{children}</div>
+      </main>
     </div>
   );
 }

@@ -34,7 +34,7 @@ function EditableTag({
   value,
   onUpdate,
   onRemove,
-  colorClass = 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300'
+  colorClass = 'bg-[#FAD400]/15 border-[#FAD400]/30 text-neutral-800'
 }: {
   value: string;
   onUpdate: (newValue: string) => void;
@@ -56,14 +56,14 @@ function EditableTag({
           type="text"
           value={editValue}
           onChange={(e) => setEditValue(e.target.value)}
-          className="px-3 py-1.5 bg-surface-800 border border-surface-600 rounded-lg text-sm text-white w-36 focus:outline-none focus:border-indigo-500"
+          className="px-3 py-1.5 bg-neutral-100 border border-neutral-300 rounded-lg text-sm text-neutral-900 w-36 focus:outline-none focus:border-[#FAD400]"
           autoFocus
           onKeyDown={(e) => e.key === 'Enter' && handleSave()}
         />
-        <button onClick={handleSave} className="p-1.5 hover:bg-surface-700 rounded-lg">
+        <button onClick={handleSave} className="p-1.5 hover:bg-neutral-200 rounded-lg">
           <Check className="w-3.5 h-3.5 text-emerald-400" />
         </button>
-        <button onClick={() => setIsEditing(false)} className="p-1.5 hover:bg-surface-700 rounded-lg">
+        <button onClick={() => setIsEditing(false)} className="p-1.5 hover:bg-neutral-200 rounded-lg">
           <X className="w-3.5 h-3.5 text-red-400" />
         </button>
       </div>
@@ -75,7 +75,7 @@ function EditableTag({
       {value}
       <button
         onClick={() => setIsEditing(true)}
-        className="ml-0.5 p-0.5 rounded hover:bg-white/10 opacity-40 group-hover/tag:opacity-100 transition-opacity"
+        className="ml-0.5 p-0.5 rounded hover:bg-neutral-100 opacity-40 group-hover/tag:opacity-100 transition-opacity"
         title="Edit"
       >
         <Edit3 className="w-3 h-3" />
@@ -118,14 +118,14 @@ function EditableField({
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+        <h3 className="text-lg font-display font-semibold text-[#FAD400] flex items-center gap-2">
           {icon}
           {label}
         </h3>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="px-2.5 py-1 rounded-lg text-xs font-medium text-surface-400 hover:text-indigo-400 hover:bg-indigo-500/10 border border-transparent hover:border-indigo-500/20 transition-all"
+            className="px-2.5 py-1 rounded-lg text-xs font-medium text-neutral-600 hover:text-[#FAD400] hover:bg-[#FAD400]/15 border border-transparent hover:border-[#FAD400]/30 transition-all"
           >
             Edit
           </button>
@@ -138,7 +138,7 @@ function EditableField({
             <textarea
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              className="w-full px-4 py-3 bg-surface-800 border border-surface-600 rounded-xl text-white text-sm leading-relaxed resize-none focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30"
+              className="w-full px-4 py-3 bg-neutral-100 border border-neutral-300 rounded-xl text-neutral-900 text-sm leading-relaxed resize-none focus:outline-none focus:border-[#FAD400] focus:ring-1 focus:ring-[#FAD400]/30"
               rows={5}
               autoFocus
             />
@@ -147,28 +147,28 @@ function EditableField({
               type="text"
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
-              className="w-full px-4 py-3 bg-surface-800 border border-surface-600 rounded-xl text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30"
+              className="w-full px-4 py-3 bg-neutral-100 border border-neutral-300 rounded-xl text-neutral-900 focus:outline-none focus:border-[#FAD400] focus:ring-1 focus:ring-[#FAD400]/30"
               autoFocus
             />
           )}
           <div className="flex gap-2">
-            <button onClick={handleSave} className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
+            <button onClick={handleSave} className="px-4 py-1.5 bg-[#FAD400] hover:brightness-95 text-neutral-900 font-display font-semibold text-sm rounded-lg transition-colors">
               Save
             </button>
-            <button onClick={() => { setEditValue(value); setIsEditing(false); }} className="px-4 py-1.5 bg-surface-700 hover:bg-surface-600 text-surface-300 text-sm rounded-lg transition-colors">
+            <button onClick={() => { setEditValue(value); setIsEditing(false); }} className="px-4 py-1.5 bg-neutral-200 hover:bg-neutral-300 text-neutral-700 text-sm rounded-lg transition-colors">
               Cancel
             </button>
           </div>
         </div>
       ) : (
         <div
-          className="text-surface-300 text-sm leading-relaxed cursor-pointer p-3 -m-1 rounded-xl border border-transparent hover:border-surface-700 hover:bg-surface-800/40 transition-all"
+          className="text-neutral-700 text-sm leading-relaxed cursor-pointer p-3 -m-1 rounded-xl border border-transparent hover:border-neutral-200 hover:bg-neutral-50 transition-all"
           onClick={() => setIsEditing(true)}
         >
           {value ? (
             <p className="whitespace-pre-line">{value}</p>
           ) : (
-            <span className="text-surface-500 italic">{placeholder}</span>
+            <span className="text-neutral-500 italic">{placeholder}</span>
           )}
         </div>
       )}
@@ -205,15 +205,15 @@ function AddTagInput({
           type="text"
           value={newValue}
           onChange={(e) => setNewValue(e.target.value)}
-          className="px-3 py-1.5 bg-surface-800 border border-surface-600 rounded-lg text-sm text-white w-32 focus:outline-none focus:border-indigo-500"
+          className="px-3 py-1.5 bg-neutral-100 border border-neutral-300 rounded-lg text-sm text-neutral-900 w-32 focus:outline-none focus:border-[#FAD400]"
           autoFocus
           onKeyDown={(e) => e.key === 'Enter' && onAdd()}
           placeholder={placeholder}
         />
-        <button onClick={onAdd} className="p-1.5 hover:bg-surface-700 rounded-lg">
+        <button onClick={onAdd} className="p-1.5 hover:bg-neutral-200 rounded-lg">
           <Check className="w-3.5 h-3.5 text-emerald-400" />
         </button>
-        <button onClick={onCancel} className="p-1.5 hover:bg-surface-700 rounded-lg">
+        <button onClick={onCancel} className="p-1.5 hover:bg-neutral-200 rounded-lg">
           <X className="w-3.5 h-3.5 text-red-400" />
         </button>
       </div>
@@ -413,7 +413,7 @@ export function BrandDNAPage() {
   const positioning = brandDNA.positioning || '';
 
   return (
-    <div className="min-h-screen pt-20 pb-28 px-4">
+    <div className="min-h-screen pt-8 pb-28 px-4 lg:px-8">
       <AnimatePresence>
         {showResetModal && (
           <motion.div
@@ -421,7 +421,7 @@ export function BrandDNAPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-neutral-900/40 backdrop-blur-sm"
             role="dialog"
             aria-modal="true"
             aria-labelledby="reset-dna-title"
@@ -431,13 +431,13 @@ export function BrandDNAPage() {
               initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 8 }}
-              className="w-full max-w-md rounded-2xl border border-surface-700 bg-surface-900 p-6 shadow-2xl"
+              className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 id="reset-dna-title" className="text-lg font-semibold text-white mb-2">
+              <h2 id="reset-dna-title" className="text-lg font-display font-semibold text-[#FAD400] mb-2">
                 Re-run website analysis?
               </h2>
-              <p className="text-sm text-surface-400 mb-6 leading-relaxed">
+              <p className="text-sm text-neutral-600 mb-6 leading-relaxed">
                 We will scrape your site again and replace Brand DNA with fresh AI output. All campaigns and creatives for this project will be permanently removed. Your project will stay in Existing Projects.
               </p>
               <div className="flex gap-3 justify-end">
@@ -445,7 +445,7 @@ export function BrandDNAPage() {
                   type="button"
                   disabled={isResetting}
                   onClick={() => setShowResetModal(false)}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-surface-300 hover:bg-surface-800 border border-surface-700 disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl text-sm font-medium text-neutral-700 hover:bg-neutral-100 border border-neutral-200 disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -465,7 +465,7 @@ export function BrandDNAPage() {
 
       <div className="max-w-7xl mx-auto">
         {isResetting && (
-          <div className="mb-6 rounded-xl border border-indigo-500/40 bg-indigo-500/10 px-4 py-3 text-sm text-indigo-100 flex items-center gap-3">
+          <div className="mb-6 rounded-xl border border-[#FAD400]/40 bg-[#FAD400]/15 px-4 py-3 text-sm text-neutral-800 flex items-center gap-3">
             <Loader2 className="w-4 h-4 animate-spin shrink-0" />
             Re-analyzing your website and refreshing Brand DNA. This may take up to a minute…
           </div>
@@ -475,15 +475,15 @@ export function BrandDNAPage() {
             className={[
               'mb-6 rounded-xl border px-4 py-3 text-sm flex items-start justify-between gap-4',
               resetFeedback.type === 'success'
-                ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-100'
-                : 'border-rose-500/40 bg-rose-500/10 text-rose-100',
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                : 'border-rose-200 bg-rose-50 text-rose-800',
             ].join(' ')}
           >
             <p className="leading-relaxed">{resetFeedback.text}</p>
             <button
               type="button"
               onClick={() => setResetFeedback(null)}
-              className="shrink-0 p-1 rounded-lg hover:bg-white/10 text-current opacity-80 hover:opacity-100"
+              className="shrink-0 p-1 rounded-lg hover:bg-neutral-100 text-current opacity-80 hover:opacity-100"
               aria-label="Dismiss"
             >
               <X className="w-4 h-4" />
@@ -496,13 +496,13 @@ export function BrandDNAPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/10 mb-4">
-            <Sparkles className="w-7 h-7 text-indigo-400" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FAD400]/20 to-amber-100 border border-[#FAD400]/25 mb-4">
+            <Sparkles className="w-7 h-7 text-[#FAD400]" />
           </div>
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Your Brand DNA</h1>
-          <p className="text-surface-400 max-w-lg mx-auto">
+          <h1 className="text-3xl font-display font-bold text-[#FAD400] mb-2">Your Brand DNA</h1>
+          <p className="text-neutral-600 max-w-lg mx-auto">
             A snapshot of your brand identity. We use this to generate on-brand campaigns.
-            <span className="text-indigo-400 ml-1">Click any section to edit.</span>
+            <span className="text-[#FAD400] ml-1">Click any section to edit.</span>
           </p>
         </motion.div>
 
@@ -520,12 +520,12 @@ export function BrandDNAPage() {
                 {/* Logo */}
                 <button
                   onClick={() => logoInputRef.current?.click()}
-                  className="group relative w-28 h-28 rounded-2xl bg-surface-800 border-2 border-surface-700 hover:border-indigo-500/50 flex items-center justify-center overflow-hidden flex-shrink-0 transition-colors"
+                  className="group relative w-28 h-28 rounded-2xl bg-neutral-100 border-2 border-neutral-200 hover:border-[#FAD400]/50 flex items-center justify-center overflow-hidden flex-shrink-0 transition-colors"
                 >
                   {websiteLogo ? (
                     <img src={websiteLogo} alt="Logo" className="w-full h-full object-contain p-3" />
                   ) : (
-                    <span className="text-4xl font-bold text-indigo-400">
+                    <span className="text-4xl font-bold text-[#FAD400]">
                       {websiteData.title?.charAt(0) || 'B'}
                     </span>
                   )}
@@ -537,12 +537,12 @@ export function BrandDNAPage() {
                 <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
 
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-3xl font-display font-bold text-white mb-1 truncate">
+                  <h2 className="text-3xl font-display font-bold text-neutral-900 mb-1 truncate">
                     {websiteData.brandName || websiteData.title || 'Your Brand'}
                   </h2>
-                  <div className="flex items-center gap-2 text-surface-400 mb-4">
+                  <div className="flex items-center gap-2 text-neutral-600 mb-4">
                     <Globe className="w-4 h-4 flex-shrink-0" />
-                    <a href={websiteData.url} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-400 transition-colors text-sm truncate">
+                    <a href={websiteData.url} target="_blank" rel="noopener noreferrer" className="hover:text-[#FAD400] transition-colors text-sm truncate">
                       {websiteData.url}
                     </a>
                   </div>
@@ -550,13 +550,13 @@ export function BrandDNAPage() {
                   {/* Industry & Positioning Badges */}
                   <div className="flex flex-wrap gap-2 mb-4">
                     {industry && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-medium">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs font-medium">
                         <Building2 className="w-3 h-3" />
                         {industry.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
                       </span>
                     )}
                     {positioning && (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-medium">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 text-xs font-medium">
                         <Crown className="w-3 h-3" />
                         {positioning.charAt(0).toUpperCase() + positioning.slice(1)} Positioning
                       </span>
@@ -565,12 +565,12 @@ export function BrandDNAPage() {
 
                   {/* Fonts */}
                   <div className="flex items-center gap-3">
-                    <Type className="w-4 h-4 text-surface-500" />
+                    <Type className="w-4 h-4 text-neutral-500" />
                     <div className="flex gap-4">
                       {fonts.map((font: string, idx: number) => (
                         <div key={idx} className="text-center">
                           <span className="text-lg text-white" style={{ fontFamily: font }}>Aa</span>
-                          <p className="text-[10px] text-surface-500 mt-0.5">{font}</p>
+                          <p className="text-[10px] text-neutral-500 mt-0.5">{font}</p>
                         </div>
                       ))}
                     </div>
@@ -582,24 +582,24 @@ export function BrandDNAPage() {
             {/* ── Brand Colors ── */}
             <div className="card p-6">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <h3 className="text-lg font-display font-semibold text-[#FAD400] flex items-center gap-2">
                   <Palette className="w-5 h-5 text-purple-400" />
                   Brand Colors
                 </h3>
-                <span className="text-xs text-surface-500">{colors.length} color{colors.length !== 1 ? 's' : ''}</span>
+                <span className="text-xs text-neutral-500">{colors.length} color{colors.length !== 1 ? 's' : ''}</span>
               </div>
 
               {colors.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="w-12 h-12 rounded-xl bg-surface-800 border border-surface-700 flex items-center justify-center mb-3">
-                    <Palette className="w-5 h-5 text-surface-500" />
+                  <div className="w-12 h-12 rounded-xl bg-neutral-100 border border-neutral-200 flex items-center justify-center mb-3">
+                    <Palette className="w-5 h-5 text-neutral-500" />
                   </div>
-                  <p className="text-sm text-surface-400 mb-3">No brand colors detected</p>
+                  <p className="text-sm text-neutral-600 mb-3">No brand colors detected</p>
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => { setPendingColor('#6366f1'); setShowAddColorPicker(true); }}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#FAD400] hover:brightness-95 text-white text-sm font-semibold transition-all shadow-lg shadow-[#FAD400]/25 hover:shadow-[#FAD400]/40"
                     >
                       <Plus className="w-4 h-4" />
                       Add Your First Color
@@ -612,7 +612,7 @@ export function BrandDNAPage() {
                     <div key={idx} className="group/color text-center">
                       <div className="relative">
                         <div
-                          className="w-20 h-20 rounded-2xl border-2 border-surface-700 cursor-pointer hover:ring-2 hover:ring-indigo-500/50 hover:scale-105 transition-all shadow-lg"
+                          className="w-20 h-20 rounded-2xl border-2 border-neutral-200 cursor-pointer hover:ring-2 hover:ring-[#FAD400]/40 hover:scale-105 transition-all shadow-lg"
                           style={{ backgroundColor: color }}
                           title="Click to change color"
                         />
@@ -631,13 +631,13 @@ export function BrandDNAPage() {
                             e.stopPropagation();
                             updateWebsiteExtras('websiteColors', colors.filter((_: string, i: number) => i !== idx));
                           }}
-                          className="absolute -top-2 -right-2 z-10 p-1 bg-surface-800 hover:bg-red-600 border border-surface-600 hover:border-red-500 rounded-full opacity-0 group-hover/color:opacity-100 transition-all"
+                          className="absolute -top-2 -right-2 z-10 p-1 bg-neutral-100 hover:bg-red-600 border border-neutral-300 hover:border-red-500 rounded-full opacity-0 group-hover/color:opacity-100 transition-all"
                         >
-                          <X className="w-3 h-3 text-surface-300 hover:text-white" />
+                          <X className="w-3 h-3 text-neutral-700 hover:text-white" />
                         </button>
                       </div>
-                      <span className="text-[10px] text-surface-500 font-mono mt-2 block">{color}</span>
-                      <span className="text-[10px] text-surface-600 block">{getColorRole(idx)}</span>
+                      <span className="text-[10px] text-neutral-500 font-mono mt-2 block">{color}</span>
+                      <span className="text-[10px] text-neutral-500 block">{getColorRole(idx)}</span>
                     </div>
                   ))}
                   {/* Add color */}
@@ -646,15 +646,15 @@ export function BrandDNAPage() {
                       <button
                         type="button"
                         onClick={() => { setPendingColor('#6366f1'); setShowAddColorPicker(true); }}
-                        className="w-20 h-20 rounded-3xl border border-surface-600/80 bg-surface-800/70 hover:bg-surface-800 hover:border-indigo-500/60 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg hover:shadow-indigo-500/20"
+                        className="w-20 h-20 rounded-3xl border border-neutral-300/80 bg-neutral-100/70 hover:bg-neutral-100 hover:border-[#FAD400]/50 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg hover:shadow-[#FAD400]/20"
                         aria-label="Add a color"
                       >
-                        <div className="w-10 h-10 rounded-2xl border border-dashed border-indigo-400/40 flex items-center justify-center">
-                          <Plus className="w-5 h-5 text-indigo-300" />
+                        <div className="w-10 h-10 rounded-2xl border border-dashed border-[#FAD400]/40 flex items-center justify-center">
+                          <Plus className="w-5 h-5 text-neutral-800" />
                         </div>
                       </button>
                     </div>
-                    <span className="text-[10px] text-surface-500 mt-2 block font-medium">Add Color</span>
+                    <span className="text-[10px] text-neutral-500 mt-2 block font-medium">Add Color</span>
                   </div>
                 </div>
               )}
@@ -676,9 +676,9 @@ export function BrandDNAPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.98 }}
                       transition={{ type: 'spring', damping: 22, stiffness: 260 }}
-                      className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,360px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-surface-700/60 bg-surface-900/95 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden"
+                      className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,360px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-neutral-200 bg-white/95 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden"
                     >
-                      <div className="px-5 py-4 border-b border-surface-700/60 flex items-center justify-between">
+                      <div className="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
                           <div
                             className="w-3.5 h-3.5 rounded-md border border-white/10 shrink-0"
@@ -689,7 +689,7 @@ export function BrandDNAPage() {
                         <button
                           type="button"
                           onClick={() => setShowAddColorPicker(false)}
-                          className="p-2 rounded-xl text-surface-300 hover:text-white hover:bg-surface-800/70 transition-colors"
+                          className="p-2 rounded-xl text-neutral-700 hover:text-white hover:bg-neutral-100/70 transition-colors"
                           aria-label="Close"
                         >
                           <X className="w-4 h-4" />
@@ -697,23 +697,23 @@ export function BrandDNAPage() {
                       </div>
 
                       <div className="p-5 space-y-4">
-                        <div className="rounded-2xl border border-surface-700/60 bg-surface-800/60 p-3">
+                        <div className="rounded-2xl border border-neutral-200 bg-neutral-100 p-3">
                           <HexColorPicker color={pendingColor} onChange={setPendingColor} />
                         </div>
 
                         <div className="flex items-center gap-3">
                           <div className="flex-1">
-                            <label className="block text-[11px] text-surface-500 mb-1.5">Hex</label>
+                            <label className="block text-[11px] text-neutral-500 mb-1.5">Hex</label>
                             <input
                               value={pendingColor}
                               onChange={(e) => setPendingColor(e.target.value)}
-                              className="w-full px-3 py-2 rounded-xl bg-surface-800/80 border border-surface-700/70 text-surface-100 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                              className="w-full px-3 py-2 rounded-xl bg-neutral-100 border border-neutral-200/70 text-neutral-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#FAD400]/40"
                               placeholder="#6366f1"
                             />
                           </div>
                           <div className="w-14">
-                            <label className="block text-[11px] text-surface-500 mb-1.5">&nbsp;</label>
-                            <div className="w-14 h-10 rounded-xl border border-surface-700/70" style={{ backgroundColor: pendingColor }} />
+                            <label className="block text-[11px] text-neutral-500 mb-1.5">&nbsp;</label>
+                            <div className="w-14 h-10 rounded-xl border border-neutral-200/70" style={{ backgroundColor: pendingColor }} />
                           </div>
                         </div>
 
@@ -721,7 +721,7 @@ export function BrandDNAPage() {
                           <button
                             type="button"
                             onClick={() => setShowAddColorPicker(false)}
-                            className="px-4 py-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-surface-200 text-sm font-medium transition-colors"
+                            className="px-4 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-sm font-medium transition-colors"
                           >
                             Cancel
                           </button>
@@ -731,7 +731,7 @@ export function BrandDNAPage() {
                               updateWebsiteExtras('websiteColors', colors.length ? [...colors, pendingColor] : [pendingColor]);
                               setShowAddColorPicker(false);
                             }}
-                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20"
+                            className="px-4 py-2 rounded-xl bg-[#FAD400] hover:brightness-95 text-white text-sm font-semibold transition-all shadow-lg shadow-[#FAD400]/20"
                           >
                             Add Color
                           </button>
@@ -753,7 +753,7 @@ export function BrandDNAPage() {
                 placeholder="Add your brand tagline..."
               />
               {tagline && (
-                <p className="text-xl text-indigo-300/80 italic font-display mt-3 pl-3 border-l-2 border-indigo-500/30">
+                <p className="text-xl text-neutral-800/80 italic font-display mt-3 pl-3 border-l-2 border-[#FAD400]/50">
                   &ldquo;{tagline}&rdquo;
                 </p>
               )}
@@ -763,7 +763,7 @@ export function BrandDNAPage() {
             <div className="grid md:grid-cols-2 gap-6">
               {/* Brand Values */}
               <div className="card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-display font-semibold text-[#FAD400] mb-4 flex items-center gap-2">
                   <Heart className="w-5 h-5 text-rose-400" />
                   Brand Values
                 </h3>
@@ -774,13 +774,13 @@ export function BrandDNAPage() {
                       value={value}
                       onUpdate={(newVal) => updateArrayField('brandValues', idx, newVal)}
                       onRemove={() => removeFromArrayField('brandValues', idx)}
-                      colorClass="bg-indigo-500/10 border-indigo-500/20 text-indigo-300"
+                      colorClass="bg-[#FAD400]/15 border-[#FAD400]/30 text-neutral-800"
                     />
                   ))}
                   <AddTagInput
                     field="brandValues"
                     placeholder="Add value..."
-                    colorClass="border-surface-600 hover:border-indigo-500 text-surface-500 hover:text-indigo-400"
+                    colorClass="border-neutral-300 hover:border-[#FAD400] text-neutral-500 hover:text-[#FAD400]"
                     isActive={addingTo === 'brandValues'}
                     onActivate={() => setAddingTo('brandValues')}
                     newValue={newValue}
@@ -793,7 +793,7 @@ export function BrandDNAPage() {
 
               {/* Brand Aesthetic */}
               <div className="card p-6">
-                <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-display font-semibold text-[#FAD400] mb-4 flex items-center gap-2">
                   <Eye className="w-5 h-5 text-purple-400" />
                   Brand Aesthetic
                 </h3>
@@ -804,13 +804,13 @@ export function BrandDNAPage() {
                       value={item}
                       onUpdate={(newVal) => updateAestheticItem(idx, newVal)}
                       onRemove={() => removeAestheticItem(idx)}
-                      colorClass="bg-purple-500/10 border-purple-500/20 text-purple-300"
+                      colorClass="bg-violet-50 border-violet-200 text-violet-800"
                     />
                   ))}
                   <AddTagInput
                     field="brandAesthetic"
                     placeholder="Add style..."
-                    colorClass="border-surface-600 hover:border-purple-500 text-surface-500 hover:text-purple-400"
+                    colorClass="border-neutral-300 hover:border-violet-300 text-neutral-500 hover:text-violet-700"
                     isActive={addingTo === 'brandAesthetic'}
                     onActivate={() => setAddingTo('brandAesthetic')}
                     newValue={newValue}
@@ -824,7 +824,7 @@ export function BrandDNAPage() {
 
             {/* ── Tone of Voice ── */}
             <div className="card p-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-display font-semibold text-[#FAD400] mb-4 flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-cyan-400" />
                 Brand Tone of Voice
               </h3>
@@ -841,7 +841,7 @@ export function BrandDNAPage() {
                 <AddTagInput
                   field="brandToneOfVoice"
                   placeholder="Add tone..."
-                  colorClass="border-surface-600 hover:border-cyan-500 text-surface-500 hover:text-cyan-400"
+                  colorClass="border-neutral-300 hover:border-cyan-500 text-neutral-500 hover:text-cyan-400"
                   isActive={addingTo === 'brandToneOfVoice'}
                   onActivate={() => setAddingTo('brandToneOfVoice')}
                   newValue={newValue}
@@ -873,18 +873,18 @@ export function BrandDNAPage() {
             className="space-y-4 lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2"
           >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                <ImageIcon className="w-4 h-4 text-surface-400" />
+              <h3 className="text-sm font-display font-semibold text-[#FAD400] flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-neutral-600" />
                 Brand Assets
                 {allImages.length > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-md bg-surface-800 text-[10px] text-surface-400 font-medium">
+                  <span className="px-1.5 py-0.5 rounded-md bg-neutral-100 text-[10px] text-neutral-600 font-medium">
                     {allImages.length}
                   </span>
                 )}
               </h3>
               <button
                 onClick={() => imageInputRef.current?.click()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-white text-xs font-medium transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FAD400] hover:brightness-95 text-neutral-900 font-display font-semibold text-xs font-medium transition-colors"
               >
                 <Upload className="w-3.5 h-3.5" />
                 Upload
@@ -901,7 +901,7 @@ export function BrandDNAPage() {
 
             {/* Hero / First image displayed larger */}
             {allImages.length > 0 && (
-              <div className="group/img relative aspect-video rounded-xl overflow-hidden bg-surface-800 border border-surface-700 hover:border-indigo-500/50 transition-colors">
+              <div className="group/img relative aspect-video rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200 hover:border-[#FAD400]/50 transition-colors">
                 <img
                   src={allImages[0]}
                   alt="Primary brand image"
@@ -929,7 +929,7 @@ export function BrandDNAPage() {
                 return (
                   <div
                     key={idx}
-                    className="group/img relative aspect-square rounded-xl overflow-hidden bg-surface-800 border border-surface-700 hover:border-indigo-500/50 transition-colors"
+                    className="group/img relative aspect-square rounded-xl overflow-hidden bg-neutral-100 border border-neutral-200 hover:border-[#FAD400]/50 transition-colors"
                   >
                     <img
                       src={img}
@@ -949,10 +949,10 @@ export function BrandDNAPage() {
               {/* Upload tile */}
               <button
                 onClick={() => imageInputRef.current?.click()}
-                className="aspect-square rounded-xl border-2 border-dashed border-surface-600 hover:border-indigo-500 flex flex-col items-center justify-center gap-1.5 transition-colors group/upload"
+                className="aspect-square rounded-xl border-2 border-dashed border-neutral-300 hover:border-indigo-500 flex flex-col items-center justify-center gap-1.5 transition-colors group/upload"
               >
-                <Upload className="w-5 h-5 text-surface-500 group-hover/upload:text-indigo-400 transition-colors" />
-                <span className="text-[10px] text-surface-500 group-hover/upload:text-indigo-400 transition-colors">Add Image</span>
+                <Upload className="w-5 h-5 text-neutral-500 group-hover/upload:text-[#FAD400] transition-colors" />
+                <span className="text-[10px] text-neutral-500 group-hover/upload:text-[#FAD400] transition-colors">Add Image</span>
               </button>
             </div>
           </motion.div>
@@ -963,7 +963,7 @@ export function BrandDNAPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="fixed bottom-0 left-0 right-0 p-4 glass border-t border-surface-border z-50"
+          className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-xl border-t border-neutral-200 z-50"
         >
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <button
@@ -977,9 +977,9 @@ export function BrandDNAPage() {
                 'text-red-200/90 hover:text-white',
                 'shadow-lg shadow-black/20 hover:shadow-red-500/15',
                 'transition-all duration-200 ease-out',
-                'hover:-translate-y-0.5 hover:border-red-400/45 hover:bg-surface-900/60',
+                'hover:-translate-y-0.5 hover:border-red-400/45 hover:bg-white/90',
                 'active:translate-y-0 active:scale-[0.98]',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-900',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white',
                 'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:active:scale-100',
               ].join(' ')}
             >
@@ -992,7 +992,7 @@ export function BrandDNAPage() {
             </button>
             <button
               onClick={handleContinueToCampaigns}
-              className="relative px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-sm font-semibold rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all flex items-center gap-2"
+              className="relative px-6 py-2.5 bg-[#FAD400] hover:brightness-95 text-white text-sm font-semibold rounded-xl shadow-lg shadow-[#FAD400]/25 hover:shadow-[#FAD400]/40 transition-all flex items-center gap-2"
             >
               Continue to Campaigns
               <ArrowRight className="w-4 h-4" />
