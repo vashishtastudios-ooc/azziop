@@ -1,4 +1,6 @@
 import { db } from "~/server/db";
+import { grantCredits } from "~/lib/credits";
+import { monthlyCreditsForPlan } from "~/lib/pricing";
 
 export type GoogleProfileInput = {
   email?: string | null;
@@ -55,7 +57,7 @@ export async function resolveGoogleSignIn(profile: GoogleProfileInput) {
   }
 
   try {
-    return await db.user.create({
+    const created = await db.user.create({
       data: {
         name,
         email,
@@ -64,6 +66,17 @@ export async function resolveGoogleSignIn(profile: GoogleProfileInput) {
         mobile: googlePlaceholderMobile(email),
       },
     });
+
+    // One-time free-trial credits.
+    await grantCredits({
+      userId: created.id,
+      amount: monthlyCreditsForPlan("free"),
+      reason: "plan_grant",
+      sourceId: `grant:free-signup:${created.id}`,
+      metadata: { planId: "free", source: "google" },
+    });
+
+    return created;
   } catch (e) {
     const existing = await db.user.findFirst({
       where: {

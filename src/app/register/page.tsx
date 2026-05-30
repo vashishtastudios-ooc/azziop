@@ -68,9 +68,7 @@ function RegisterPageContent() {
     const openRazorpayCheckout = useCallback(
         (data: {
             keyId: string;
-            orderId: string;
-            amount: number;
-            currency: string;
+            subscriptionId: string;
             planId: string;
             interval: string;
             userName: string;
@@ -79,23 +77,21 @@ function RegisterPageContent() {
         }) => {
             const rzp = new window.Razorpay({
                 key: data.keyId,
-                amount: data.amount,
-                currency: data.currency,
-                name: 'NoPain Marketing',
+                name: 'Azziop',
                 description: `${data.planId.charAt(0).toUpperCase() + data.planId.slice(1)} Plan — ${data.interval}`,
-                order_id: data.orderId,
+                subscription_id: data.subscriptionId,
                 prefill: {
                     name: data.userName,
                     email: data.userEmail,
                     contact: data.userMobile,
                 },
                 theme: { color: '#4f46e5' },
-                handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+                handler: async (response: { razorpay_subscription_id?: string; razorpay_payment_id: string; razorpay_signature: string }) => {
                     const verifyRes = await fetch('/api/billing/verify', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_subscription_id: response.razorpay_subscription_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
                             planId: data.planId,
@@ -165,12 +161,10 @@ function RegisterPageContent() {
                         }),
                     })
                     const subscribeResult = await subscribeResponse.json()
-                    if (subscribeResponse.ok && subscribeResult?.data?.orderId) {
+                    if (subscribeResponse.ok && subscribeResult?.data?.subscriptionId) {
                         openRazorpayCheckout({
                             keyId: subscribeResult.data.keyId,
-                            orderId: subscribeResult.data.orderId,
-                            amount: subscribeResult.data.amount,
-                            currency: subscribeResult.data.currency,
+                            subscriptionId: subscribeResult.data.subscriptionId,
                             planId: selectedPlan,
                             interval: selectedInterval === 'yearly' ? 'yearly' : 'monthly',
                             userName: name.trim(),
@@ -225,7 +219,7 @@ function RegisterPageContent() {
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--hero-blue)] to-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <Sparkles className="w-5 h-5 text-white" />
                             </div>
-                            <span className="font-display font-semibold text-white text-lg">NoPain</span>
+                            <span className="font-display font-semibold text-white text-lg">Azziop</span>
                         </Link>
                     </motion.div>
 
@@ -295,7 +289,7 @@ function RegisterPageContent() {
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--hero-blue)] to-indigo-600 flex items-center justify-center shadow-lg shadow-[var(--hero-blue)]/25">
                                 <Sparkles className="w-6 h-6 text-white" />
                             </div>
-                            <span className="font-display font-bold text-white text-2xl">NoPain</span>
+                            <span className="font-display font-bold text-white text-2xl">Azziop</span>
                         </Link>
                     </div>
 

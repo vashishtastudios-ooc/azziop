@@ -12,8 +12,8 @@ export default function DashboardPage() {
   const { status: sessionStatus } = useSession();
   const setUserPlan = usePipelineStore((state) => state.setUserPlan);
   const [billingInfo, setBillingInfo] = useState<{
-    usage: { campaigns: number; images: number };
-    limits: { campaignsPerMonth: number | null; aiImagesPerMonth: number | null };
+    creditBalance: number;
+    monthlyCredits: number;
     planId: string;
   } | null>(null);
 
@@ -72,40 +72,27 @@ export default function DashboardPage() {
         {billingInfo && (
           <div className="mt-6 rounded-xl border border-surface-800 bg-surface-900/70 p-4 text-left">
             <p className="mb-3 text-xs uppercase tracking-wide text-surface-500">
-              {billingInfo.planId} plan usage
+              {billingInfo.planId} plan
             </p>
-            <p className="mb-1 text-xs text-surface-400">
-              Campaigns {billingInfo.usage.campaigns}/{billingInfo.limits.campaignsPerMonth ?? '∞'}
+            <p className="mb-1 text-sm text-white font-semibold">
+              {billingInfo.creditBalance.toLocaleString()} credits available
             </p>
-            <div className="mb-3 h-2 rounded bg-surface-800">
+            <div className="mb-2 h-2 rounded bg-surface-800">
               <div
-                className="h-2 rounded bg-indigo-500"
+                className="h-2 rounded bg-amber-500"
                 style={{
                   width: `${Math.min(
                     100,
-                    billingInfo.limits.campaignsPerMonth
-                      ? (billingInfo.usage.campaigns / billingInfo.limits.campaignsPerMonth) * 100
+                    billingInfo.monthlyCredits
+                      ? (billingInfo.creditBalance / billingInfo.monthlyCredits) * 100
                       : 0
                   )}%`,
                 }}
               />
             </div>
-            <p className="mb-1 text-xs text-surface-400">
-              Images {billingInfo.usage.images}/{billingInfo.limits.aiImagesPerMonth ?? '∞'}
+            <p className="text-xs text-surface-400">
+              {billingInfo.monthlyCredits.toLocaleString()} credits / cycle on this plan
             </p>
-            <div className="h-2 rounded bg-surface-800">
-              <div
-                className="h-2 rounded bg-fuchsia-500"
-                style={{
-                  width: `${Math.min(
-                    100,
-                    billingInfo.limits.aiImagesPerMonth
-                      ? (billingInfo.usage.images / billingInfo.limits.aiImagesPerMonth) * 100
-                      : 0
-                  )}%`,
-                }}
-              />
-            </div>
           </div>
         )}
       </div>

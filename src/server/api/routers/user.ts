@@ -3,6 +3,10 @@ import { hash, compare } from "bcryptjs";
 import { TRPCError } from "@trpc/server";
 
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
+import { grantCredits } from "~/lib/credits";
+import { creditReasonLabel } from "~/lib/creditActivity";
+import { getAccountUsage } from "~/lib/quota";
+import { monthlyCreditsForPlan, planById } from "~/lib/pricing";
 
 export const userRouter = createTRPCRouter({
     /**
@@ -48,6 +52,15 @@ export const userRouter = createTRPCRouter({
                     email,
                     passwordHash,
                 },
+            });
+
+            // One-time free-trial credits.
+            await grantCredits({
+                userId: user.id,
+                amount: monthlyCreditsForPlan("free"),
+                reason: "plan_grant",
+                sourceId: `grant:free-signup:${user.id}`,
+                metadata: { planId: "free", source: "register" },
             });
 
             return { userId: user.id, message: "Account created successfully" };
@@ -133,6 +146,7 @@ export const userRouter = createTRPCRouter({
                 email: true,
                 mobile: true,
                 avatarUrl: true,
+                creditBalance: true,
                 createdAt: true,
             },
         });
@@ -146,4 +160,58 @@ export const userRouter = createTRPCRouter({
 
         return user;
     }),
+
+    /**
+     * Plan + credit balance + project usage for the dashboard / billing UI.
+     */
+    account: protectedProcedure.query(async ({ ctx }) => {
+        return getAccountUsage(ctx.session.user.id);
+    }),
+
+    /**
+     * Credit balance, plan context, and recent ledger activity.
+     */
+    creditActivity: protectedProcedure
+        .input(
+            z
+                .object({
+                    limit: z.number().int().min(1).max(100).default(50),
+                })
+                .optional(),
+        )
+        .query(async ({ ctx, input }) => {
+            const limit = input?.limit ?? 50;
+            const userId = ctx.session.user.id;
+            const account = await getAccountUsage(userId);
+            const plan = planById(account.planId);
+
+            const entries = await ctx.db.creditLedger.findMany({
+                where: { userId },
+                orderBy: { createdAt: "desc" },
+                take: limit,
+                select: {
+                    id: true,
+                    amount: true,
+                    reason: true,
+                    balanceAfter: true,
+                    createdAt: true,
+                },
+            });
+
+            return {
+                creditBalance: account.creditBalance,
+                planId: account.planId,
+                planName: plan.name,
+                monthlyCredits: account.monthlyCredits,
+                subscriptionPeriodEnd: account.subscriptionPeriodEnd,
+                subscriptionStatus: account.subscriptionStatus,
+                entries: entries.map((row) => ({
+                    id: row.id,
+                    amount: row.amount,
+                    category: creditReasonLabel(row.reason),
+                    balanceAfter: row.balanceAfter,
+                    createdAt: row.createdAt,
+                })),
+            };
+        }),
 });

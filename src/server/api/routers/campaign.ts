@@ -27,6 +27,8 @@ import type {
 } from "../../../types";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { spendForAction, grantCredits, costForAction } from "~/lib/credits";
+import { randomUUID } from "crypto";
 
 const campaignInputSchema = z.object({
   title: z.string().default("Untitled Campaign"),
@@ -367,6 +369,28 @@ export const campaignRouter = createTRPCRouter({
       const model = getModel("layer2");
       const MAX_ATTEMPTS = 2;
 
+      // Reserve credits up front (atomic). Refunded below if generation fails.
+      const reserve = await spendForAction(ctx.session.user.id, "campaign", 1);
+      if (!reserve.ok) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Not enough credits. Generating campaigns costs ${costForAction(
+            "campaign",
+            1,
+          )} credits — your balance is ${reserve.balance}. Top up or upgrade in Pricing.`,
+        });
+      }
+
+      const refundCampaign = () =>
+        grantCredits({
+          userId: ctx.session.user.id,
+          amount: costForAction("campaign", 1),
+          reason: "refund",
+          sourceId: `refund:campaign:${randomUUID()}`,
+          metadata: { reason: "generation_failed" },
+        });
+
+      try {
       for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
         const prevCtx: PreviousCampaignContext | undefined =
           input.previousContext &&
@@ -489,6 +513,10 @@ export const campaignRouter = createTRPCRouter({
         code: "INTERNAL_SERVER_ERROR",
         message: "Campaign generation failed after retries",
       });
+      } catch (e) {
+        await refundCampaign();
+        throw e;
+      }
     }),
 
   generateCreatives: protectedProcedure

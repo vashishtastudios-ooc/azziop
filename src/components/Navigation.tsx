@@ -40,7 +40,7 @@ export function Navigation() {
           ? creatives[editingCreativeIndex].headline
           : 'Edit Creative';
       default:
-        return 'NoPain Creative Director';
+        return 'Azziop Creative Director';
     }
   };
 

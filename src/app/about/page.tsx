@@ -102,12 +102,12 @@ export default function AboutPage() {
                             </h2>
                             <p className="text-lg text-surface-300 leading-relaxed mb-4">
                                 Passionate about the intersection of AI and creative marketing, Siddhartha built
-                                No Pain Marketing to solve a problem he experienced firsthand — the struggle of
+                                Azziop to solve a problem he experienced firsthand — the struggle of
                                 creating professional, on-brand marketing campaigns quickly and affordably.
                             </p>
                             <p className="text-surface-400 leading-relaxed">
                                 With a vision to make world-class marketing accessible to everyone, he designed
-                                the 6-layer AI pipeline that powers NoPain — turning any website URL into a
+                                the 6-layer AI pipeline that powers Azziop — turning any website URL into a
                                 complete marketing campaign in under 60 seconds.
                             </p>
                         </div>

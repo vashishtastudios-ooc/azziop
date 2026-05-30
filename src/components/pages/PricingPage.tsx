@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import Script from 'next/script';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, X, Sparkles, ArrowRight, Zap, Star, Loader2, Coins } from 'lucide-react';
 import { useSession } from 'next-auth/react';
@@ -11,38 +10,9 @@ import {
     CREDIT_PACKS,
     YEARLY_BILLING_DISCOUNT,
     resolvePlanPrice,
+    creditsToApproxImages,
     type PlanId,
 } from '~/lib/pricing';
-
-declare global {
-    interface Window {
-        Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
-    }
-}
-
-interface RazorpayOptions {
-    key: string;
-    amount: number;
-    currency: string;
-    name: string;
-    description: string;
-    order_id: string;
-    prefill?: { name?: string; email?: string; contact?: string };
-    theme?: { color?: string };
-    handler: (response: RazorpayResponse) => void;
-    modal?: { ondismiss?: () => void };
-}
-
-interface RazorpayInstance {
-    open: () => void;
-    on: (event: string, handler: (response: unknown) => void) => void;
-}
-
-interface RazorpayResponse {
-    razorpay_payment_id: string;
-    razorpay_order_id: string;
-    razorpay_signature: string;
-}
 
 export function PricingPage() {
     const [yearly, setYearly] = useState(false);
@@ -51,136 +21,7 @@ export function PricingPage() {
     const router = useRouter();
     const { status } = useSession();
 
-    const openSubscriptionCheckout = useCallback(
-        (data: {
-            keyId: string;
-            orderId: string;
-            amount: number;
-            currency: string;
-            planId: PlanId;
-            interval: string;
-            userName: string;
-            userEmail: string;
-            userMobile: string;
-        }) => {
-            const options: RazorpayOptions = {
-                key: data.keyId,
-                amount: data.amount,
-                currency: data.currency,
-                name: 'NoPain Marketing',
-                description: `${data.planId.charAt(0).toUpperCase() + data.planId.slice(1)} Plan — ${data.interval}`,
-                order_id: data.orderId,
-                prefill: {
-                    name: data.userName,
-                    email: data.userEmail,
-                    contact: data.userMobile,
-                },
-                theme: { color: '#4f46e5' },
-                handler: async (response: RazorpayResponse) => {
-                    try {
-                        const verifyRes = await fetch('/api/billing/verify', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature,
-                                planId: data.planId,
-                                interval: data.interval,
-                            }),
-                        });
-                        const verifyResult = await verifyRes.json();
-
-                        if (verifyRes.ok && verifyResult.success) {
-                            router.push('/dashboard?upgraded=true');
-                        } else {
-                            alert(verifyResult?.error ?? 'Payment verification failed. Contact support.');
-                        }
-                    } catch {
-                        alert('Payment verification failed. Please contact support.');
-                    } finally {
-                        setLoadingPlan(null);
-                    }
-                },
-                modal: {
-                    ondismiss: () => setLoadingPlan(null),
-                },
-            };
-
-            const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', () => {
-                alert('Payment failed. Please try again.');
-                setLoadingPlan(null);
-            });
-            rzp.open();
-        },
-        [router],
-    );
-
-    const openCreditPackCheckout = useCallback(
-        (data: {
-            keyId: string;
-            orderId: string;
-            amount: number;
-            currency: string;
-            packId: string;
-            images: number;
-            userName: string;
-            userEmail: string;
-            userMobile: string;
-        }) => {
-            const options: RazorpayOptions = {
-                key: data.keyId,
-                amount: data.amount,
-                currency: data.currency,
-                name: 'NoPain Marketing',
-                description: `${data.images} AI image credits`,
-                order_id: data.orderId,
-                prefill: {
-                    name: data.userName,
-                    email: data.userEmail,
-                    contact: data.userMobile,
-                },
-                theme: { color: '#4f46e5' },
-                handler: async (response: RazorpayResponse) => {
-                    try {
-                        const verifyRes = await fetch('/api/billing/credits', {
-                            method: 'PUT',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature,
-                                packId: data.packId,
-                            }),
-                        });
-                        const verifyResult = await verifyRes.json();
-                        if (verifyRes.ok && verifyResult.success) {
-                            router.push('/dashboard?credits=added');
-                        } else {
-                            alert(verifyResult?.error ?? 'Payment verification failed. Contact support.');
-                        }
-                    } catch {
-                        alert('Payment verification failed. Please contact support.');
-                    } finally {
-                        setLoadingPack(null);
-                    }
-                },
-                modal: {
-                    ondismiss: () => setLoadingPack(null),
-                },
-            };
-            const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', () => {
-                alert('Payment failed. Please try again.');
-                setLoadingPack(null);
-            });
-            rzp.open();
-        },
-        [router],
-    );
-
-    const handlePlanClick = async (planId: PlanId) => {
+    const handlePlanClick = (planId: PlanId) => {
         const interval = yearly ? 'yearly' : 'monthly';
 
         if (status !== 'authenticated') {
@@ -193,87 +34,21 @@ export function PricingPage() {
             return;
         }
 
-        if (!window.Razorpay) {
-            alert('Payment SDK is loading. Please try again in a moment.');
-            return;
-        }
-
         setLoadingPlan(planId);
-
-        try {
-            const response = await fetch('/api/billing/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ planId, interval }),
-            });
-            const result = await response.json();
-
-            if (!response.ok || !result?.data?.orderId) {
-                alert(result?.error ?? 'Unable to start checkout. Please try again.');
-                setLoadingPlan(null);
-                return;
-            }
-
-            openSubscriptionCheckout({
-                keyId: result.data.keyId,
-                orderId: result.data.orderId,
-                amount: result.data.amount,
-                currency: result.data.currency,
-                planId,
-                interval,
-                userName: result.data.userName,
-                userEmail: result.data.userEmail,
-                userMobile: result.data.userMobile,
-            });
-        } catch {
-            alert('Something went wrong. Please try again.');
-            setLoadingPlan(null);
-        }
+        router.push(`/checkout?plan=${planId}&interval=${interval}`);
     };
 
-    const handleCreditPackClick = async (packId: string) => {
+    const handleCreditPackClick = (packId: string) => {
         if (status !== 'authenticated') {
             router.push(`/register?pack=${packId}`);
             return;
         }
-        if (!window.Razorpay) {
-            alert('Payment SDK is loading. Please try again in a moment.');
-            return;
-        }
         setLoadingPack(packId);
-        try {
-            const response = await fetch('/api/billing/credits', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ packId }),
-            });
-            const result = await response.json();
-            if (!response.ok || !result?.data?.orderId) {
-                alert(result?.error ?? 'Unable to start checkout. Please try again.');
-                setLoadingPack(null);
-                return;
-            }
-            openCreditPackCheckout({
-                keyId: result.data.keyId,
-                orderId: result.data.orderId,
-                amount: result.data.amount,
-                currency: result.data.currency,
-                packId,
-                images: result.data.images,
-                userName: result.data.userName,
-                userEmail: result.data.userEmail,
-                userMobile: result.data.userMobile,
-            });
-        } catch {
-            alert('Something went wrong. Please try again.');
-            setLoadingPack(null);
-        }
+        router.push(`/checkout?pack=${packId}`);
     };
 
     return (
         <div className="relative min-h-screen pt-24 pb-20 px-4 lg:px-8">
-            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-
             <div className="absolute inset-0 bg-gradient-to-br from-surface-950 via-surface-900 to-surface-950" />
             <div className="absolute inset-0 bg-mesh-gradient" />
 
@@ -439,7 +214,7 @@ export function PricingPage() {
                                         </div>
                                     )}
                                     <h3 className="text-lg font-semibold text-white mb-1">{pack.name}</h3>
-                                    <p className="text-sm text-surface-400 mb-4">{pack.images} AI images</p>
+                                    <p className="text-sm text-surface-400 mb-4">{pack.credits} credits · ~{creditsToApproxImages(pack.credits)} images</p>
                                     <div className="flex items-baseline gap-1 mb-5">
                                         <span className="text-3xl font-bold text-white">${pack.priceUsd}</span>
                                         <span className="text-surface-500 text-sm">one-time</span>
@@ -474,7 +249,7 @@ export function PricingPage() {
                 >
                     <p className="text-surface-400 mb-4">
                         Need a custom plan for your enterprise?{' '}
-                        <a href="mailto:hello@nopainmarketing.com" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4">
+                        <a href="mailto:hello@azziop.com" className="text-indigo-400 hover:text-indigo-300 underline underline-offset-4">
                             Contact us
                         </a>
                     </p>

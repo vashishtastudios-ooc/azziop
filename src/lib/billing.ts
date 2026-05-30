@@ -29,3 +29,16 @@ export function getRazorpayKeySecret(): string {
   }
   return secret;
 }
+
+/**
+ * Razorpay Subscription Plan IDs (created once in the dashboard). Stored in env
+ * so the charged amount has a single source of truth. Returns "" if unset.
+ */
+export function getRazorpaySubscriptionPlanId(
+  planId: "starter" | "pro" | "agency",
+  interval: "monthly" | "yearly",
+): string {
+  const key = `RAZORPAY_PLAN_${planId.toUpperCase()}_${interval.toUpperCase()}`;
+  const value = (env as Record<string, string | undefined>)[key];
+  return value?.trim() ?? "";
+}

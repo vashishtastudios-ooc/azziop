@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { z } from "zod";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import {
-  createRazorpayClient,
-  getRazorpayKeyId,
-  getRazorpayKeySecret,
-} from "~/lib/billing";
+import { getRazorpayKeyId } from "~/lib/billing";
 import { creditPackById, BILLING_CURRENCY } from "~/lib/pricing";
+import {
+  createRazorpayOrder,
+  verifyOrderPaymentSignature,
+} from "~/lib/razorpayCheckout";
+import { grantCreditPack } from "~/server/lib/billingGrants";
 
 const createSchema = z.object({
   packId: z.string().min(1),
@@ -47,16 +47,15 @@ export async function POST(req: NextRequest) {
     }
 
     const amountMinor = Math.round(pack.priceUsd * 100);
-    const razorpay = createRazorpayClient();
 
-    const order = await razorpay.orders.create({
+    const order = await createRazorpayOrder({
       amount: amountMinor,
       currency: BILLING_CURRENCY,
       receipt: `credits_${pack.id}_${session.user.id.slice(-6)}`,
       notes: {
         userId: session.user.id,
         packId: pack.id,
-        images: String(pack.images),
+        credits: String(pack.credits),
         kind: "credit_pack",
       },
     });
@@ -69,7 +68,7 @@ export async function POST(req: NextRequest) {
         amount: amountMinor,
         currency: BILLING_CURRENCY,
         packId: pack.id,
-        images: pack.images,
+        credits: pack.credits,
         userName: user.name,
         userEmail: user.email ?? "",
         userMobile: user.mobile ?? "",
@@ -106,40 +105,31 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Unknown credit pack" }, { status: 400 });
     }
 
-    let secret: string;
-    try {
-      secret = getRazorpayKeySecret();
-    } catch {
-      return NextResponse.json(
-        { error: "Razorpay secret not configured" },
-        { status: 500 },
-      );
-    }
+    const valid = verifyOrderPaymentSignature(
+      parsed.data.razorpay_order_id,
+      parsed.data.razorpay_payment_id,
+      parsed.data.razorpay_signature,
+    );
 
-    const expected = crypto
-      .createHmac("sha256", secret)
-      .update(`${parsed.data.razorpay_order_id}|${parsed.data.razorpay_payment_id}`)
-      .digest("hex");
-
-    if (expected !== parsed.data.razorpay_signature) {
+    if (!valid) {
       return NextResponse.json(
         { error: "Signature mismatch" },
         { status: 400 },
       );
     }
 
-    await db.user.update({
-      where: { id: session.user.id },
-      data: {
-        bonusImageCredits: { increment: pack.images },
-        razorpayOrderId: parsed.data.razorpay_order_id,
-        razorpayPaymentId: parsed.data.razorpay_payment_id,
-      },
+    // Idempotent by payment id — webhook may also grant this pack.
+    await grantCreditPack({
+      userId: session.user.id,
+      packId: pack.id,
+      credits: pack.credits,
+      paymentId: parsed.data.razorpay_payment_id,
+      orderId: parsed.data.razorpay_order_id,
     });
 
     return NextResponse.json({
       success: true,
-      data: { imagesAdded: pack.images },
+      data: { creditsAdded: pack.credits },
     });
   } catch (error) {
     console.error("billing.credits.verify error", error);

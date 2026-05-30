@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { getMonthlyUsage } from "~/lib/quota";
-import { planById, isPlanId, DEFAULT_PLAN_ID, type PlanId } from "~/lib/pricing";
+import { getAccountUsage } from "~/lib/quota";
+import { planById } from "~/lib/pricing";
+import { createRazorpayClient } from "~/lib/billing";
 
 export async function GET() {
   try {
@@ -13,33 +14,24 @@ export async function GET() {
 
     const user = await db.user.findUnique({
       where: { id: session.user.id },
-      select: {
-        id: true,
-        planId: true,
-        billingInterval: true,
-        subscriptionStatus: true,
-        subscriptionPeriodEnd: true,
-        razorpaySubscriptionId: true,
-      },
+      select: { billingInterval: true, razorpaySubscriptionId: true },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const usage = await getMonthlyUsage(user.id);
-    const normalizedPlanId: PlanId = isPlanId(user.planId) ? user.planId : DEFAULT_PLAN_ID;
-    const plan = planById(normalizedPlanId);
+    const account = await getAccountUsage(session.user.id);
+    const plan = planById(account.planId);
 
     return NextResponse.json({
       success: true,
       data: {
-        planId: normalizedPlanId,
-        billingInterval: user.billingInterval ?? "monthly",
-        subscriptionStatus: user.subscriptionStatus,
-        subscriptionPeriodEnd: user.subscriptionPeriodEnd,
-        razorpaySubscriptionId: user.razorpaySubscriptionId,
-        usage,
+        planId: account.planId,
+        rawPlanId: account.rawPlanId,
+        billingInterval: user?.billingInterval ?? "monthly",
+        subscriptionStatus: account.subscriptionStatus,
+        subscriptionPeriodEnd: account.subscriptionPeriodEnd,
+        razorpaySubscriptionId: user?.razorpaySubscriptionId ?? null,
+        creditBalance: account.creditBalance,
+        monthlyCredits: account.monthlyCredits,
+        projects: account.projects,
         limits: plan.limits,
       },
     });
@@ -61,14 +53,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unsupported action" }, { status: 400 });
     }
 
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { razorpaySubscriptionId: true },
+    });
+
+    // Cancel at cycle end in Razorpay so the user keeps access until paid-through.
+    if (user?.razorpaySubscriptionId) {
+      try {
+        const razorpay = createRazorpayClient();
+        await razorpay.subscriptions.cancel(user.razorpaySubscriptionId, true);
+      } catch (e) {
+        console.error("[billing.portal] Razorpay cancel failed", e);
+      }
+    }
+
     await db.user.update({
       where: { id: session.user.id },
-      data: {
-        planId: "free",
-        billingInterval: null,
-        subscriptionStatus: "active",
-        subscriptionPeriodEnd: null,
-      },
+      data: { subscriptionStatus: "cancelled" },
     });
 
     return NextResponse.json({ success: true });

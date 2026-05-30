@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/server/auth';
 import { db } from '~/server/db';
 import { generateImage, generateImageWithReferences } from '~/lib/gemini';
-import { canAccessLayer, checkQuota, incrementUsage } from '~/lib/quota';
+import { canAccessLayer } from '~/lib/quota';
+import { spendForAction, grantCredits, costForAction } from '~/lib/credits';
+import { CREDIT_COSTS } from '~/lib/pricing';
+import { randomUUID } from 'crypto';
 
 /** MIME types Gemini image generation accepts as inline references (not SVG). */
 const GEMINI_REFERENCE_MIME = new Set([
@@ -142,17 +145,18 @@ export async function POST(req: NextRequest) {
         }
 
         const requestedCount = imagePrompts.length;
-        const quota = await checkQuota(session.user.id, 'images', requestedCount);
-        if (!quota.allowed) {
+        // Reserve credits up front (atomic) so concurrent jobs can't overspend.
+        const reserve = await spendForAction(session.user.id, 'image', requestedCount);
+        if (!reserve.ok) {
             return NextResponse.json(
                 {
-                    error: 'Plan limit reached',
-                    limit: quota.limit,
-                    used: quota.used,
-                    plan: quota.planId,
+                    error: 'Not enough credits',
+                    required: costForAction('image', requestedCount),
+                    balance: reserve.balance,
+                    creditCostPerImage: CREDIT_COSTS.image,
                     upgradeUrl: '/pricing',
                 },
-                { status: 403 }
+                { status: 402 }
             );
         }
 
@@ -209,8 +213,16 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        if (generatedImages.length > 0) {
-            await incrementUsage(session.user.id, 'images', generatedImages.length);
+        // Refund credits for any images that failed to generate.
+        const failedCount = requestedCount - generatedImages.length;
+        if (failedCount > 0) {
+            await grantCredits({
+                userId: session.user.id,
+                amount: costForAction('image', failedCount),
+                reason: 'refund',
+                sourceId: `refund:image:${randomUUID()}`,
+                metadata: { reason: 'generation_failed', failedCount },
+            });
         }
 
         // Persist to database if projectId is provided

@@ -13,7 +13,6 @@ import {
   Check,
   Loader2,
   Sparkles,
-  Wand2,
   AlertTriangle,
   Users,
   HelpCircle,
@@ -264,9 +263,7 @@ function CampaignPromptSection({
       animate={{ opacity: 1, y: 0 }}
       className="mb-10"
     >
-      {/* Header with sparkle icon */}
       <div className="flex items-center justify-center gap-2 mb-4">
-        <Wand2 className="w-5 h-5 text-amber-400" />
         <span className="text-surface-300 text-sm font-medium">AI Campaign Generator</span>
       </div>
 
@@ -364,8 +361,8 @@ export function CampaignsPage() {
 
   const [creativeAspectRatio, setCreativeAspectRatio] = useState<ImagePrompt['aspectRatio']>('1:1');
   const [billingInfo, setBillingInfo] = useState<{
-    usage: { campaigns: number; images: number; projects: number };
-    limits: { campaignsPerMonth: number | null; aiImagesPerMonth: number | null };
+    creditBalance: number;
+    monthlyCredits: number;
     planId: string;
   } | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -549,9 +546,6 @@ export function CampaignsPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-purple-500/10 mb-4">
-            <Target className="w-6 h-6 text-purple-400" />
-          </div>
           <h1 className="text-3xl font-display font-bold text-white mb-2">Campaign Strategies</h1>
           <p className="text-surface-400">
             Generate campaign ideas or select one to create social media creatives
@@ -579,42 +573,20 @@ export function CampaignsPage() {
             <div className="space-y-3">
               <div>
                 <div className="mb-1 flex justify-between text-xs text-surface-400">
-                  <span>Campaigns</span>
+                  <span>Credits</span>
                   <span>
-                    {billingInfo.usage.campaigns}/
-                    {billingInfo.limits.campaignsPerMonth ?? '∞'}
+                    {billingInfo.creditBalance.toLocaleString()} /{' '}
+                    {billingInfo.monthlyCredits.toLocaleString()} per cycle
                   </span>
                 </div>
                 <div className="h-2 rounded bg-surface-800">
                   <div
-                    className="h-2 rounded bg-indigo-500"
+                    className="h-2 rounded bg-amber-500"
                     style={{
                       width: `${Math.min(
                         100,
-                        billingInfo.limits.campaignsPerMonth
-                          ? (billingInfo.usage.campaigns / billingInfo.limits.campaignsPerMonth) * 100
-                          : 0
-                      )}%`,
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="mb-1 flex justify-between text-xs text-surface-400">
-                  <span>Images</span>
-                  <span>
-                    {billingInfo.usage.images}/
-                    {billingInfo.limits.aiImagesPerMonth ?? '∞'}
-                  </span>
-                </div>
-                <div className="h-2 rounded bg-surface-800">
-                  <div
-                    className="h-2 rounded bg-fuchsia-500"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        billingInfo.limits.aiImagesPerMonth
-                          ? (billingInfo.usage.images / billingInfo.limits.aiImagesPerMonth) * 100
+                        billingInfo.monthlyCredits
+                          ? (billingInfo.creditBalance / billingInfo.monthlyCredits) * 100
                           : 0
                       )}%`,
                     }}

@@ -6,7 +6,7 @@ import { scrapeWebsite } from '~/lib/scraper';
 import { screenshotExtract } from '~/lib/screenshotExtractor';
 import { getModel } from '~/lib/gemini';
 import { LAYER1_SYSTEM_PROMPT, buildLayer1UserPrompt } from '~/lib/prompts/layer1-brand-dna';
-import { checkQuota, incrementUsage } from '~/lib/quota';
+import { checkProjectLimit } from '~/lib/quota';
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,14 +35,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (!existingProject) {
-      const quota = await checkQuota(session.user.id, 'projects');
-      if (!quota.allowed) {
+      const projectLimit = await checkProjectLimit(session.user.id);
+      if (!projectLimit.allowed) {
         return NextResponse.json(
           {
-            error: 'Plan limit reached',
-            limit: quota.limit,
-            used: quota.used,
-            plan: quota.planId,
+            error: 'Project limit reached for your plan',
+            limit: projectLimit.limit,
+            used: projectLimit.used,
+            plan: projectLimit.planId,
             upgradeUrl: '/pricing',
           },
           { status: 403 }
@@ -249,8 +249,6 @@ export async function POST(req: NextRequest) {
           },
         },
       });
-
-      await incrementUsage(session.user.id, 'projects');
     }
 
     // Update project status

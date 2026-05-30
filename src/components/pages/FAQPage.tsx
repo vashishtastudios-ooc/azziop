@@ -43,7 +43,7 @@ const faqs = [
         answer: 'Absolutely. We only read publicly available website content. We do not store your website data beyond what\'s needed for campaign generation. All data is encrypted in transit and at rest.',
     },
     {
-        question: 'What makes No Pain Marketing different from Canva or other tools?',
+        question: 'What makes Azziop different from Canva or other tools?',
         answer: 'Unlike generic design tools, our AI deeply understands your brand. It doesn\'t just provide templates — it extracts your brand DNA and generates campaigns that are strategically aligned with your identity, audience, and industry. Everything is created specifically for your brand, not adapted from generic templates.',
     },
 ];
@@ -78,7 +78,7 @@ export function FAQPage() {
                     </h1>
 
                     <p className="text-xl text-surface-400 max-w-2xl mx-auto leading-relaxed">
-                        Everything you need to know about No Pain Marketing.
+                        Everything you need to know about Azziop.
                     </p>
                 </motion.div>
 
@@ -148,7 +148,7 @@ export function FAQPage() {
                             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </button>
                         <a
-                            href="mailto:hello@nopainmarketing.com"
+                            href="mailto:hello@azziop.com"
                             className="px-8 py-4 text-surface-300 hover:text-white font-semibold rounded-xl transition-all duration-200 border border-surface-700 hover:border-surface-500"
                         >
                             Contact Support

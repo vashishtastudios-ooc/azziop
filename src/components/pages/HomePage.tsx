@@ -692,7 +692,7 @@ function UseCasesSection() {
 function TestimonialsSection() {
   const testimonials = [
     {
-      quote: "No Pain Marketing cut our campaign creation time by 90%. What used to take days now takes minutes.",
+      quote: "Azziop cut our campaign creation time by 90%. What used to take days now takes minutes.",
       author: "Sarah Chen",
       role: "Marketing Director",
       company: "TechFlow Inc.",
@@ -881,7 +881,7 @@ function FAQSection() {
         <SectionHeader
           badge="FAQ"
           title="Got <span class='text-gradient-purple'>questions?</span>"
-          subtitle="Everything you need to know about No Pain Marketing."
+          subtitle="Everything you need to know about Azziop."
         />
 
         {/* FAQ List */}
@@ -1082,7 +1082,7 @@ function Footer() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--hero-blue)] to-[var(--hero-orange)] flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="font-display font-semibold text-white">No Pain Marketing</span>
+            <span className="font-display font-semibold text-white">Azziop</span>
           </div>
 
           {/* Links */}
@@ -1094,7 +1094,7 @@ function Footer() {
 
           {/* Copyright */}
           <div className="text-sm text-surface-500">
-            © {new Date().getFullYear()} No Pain Marketing. All rights reserved.
+            © {new Date().getFullYear()} Azziop. All rights reserved.
           </div>
         </div>
       </div>

@@ -112,7 +112,7 @@ export default function LoginPage() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--hero-blue)] to-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
-              <span className="font-display font-semibold text-white text-lg">NoPain</span>
+              <span className="font-display font-semibold text-white text-lg">Azziop</span>
             </Link>
           </motion.div>
 
@@ -182,7 +182,7 @@ export default function LoginPage() {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--hero-blue)] to-indigo-600 flex items-center justify-center shadow-lg shadow-[var(--hero-blue)]/25">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
-              <span className="font-display font-bold text-white text-2xl">NoPain</span>
+              <span className="font-display font-bold text-white text-2xl">Azziop</span>
             </Link>
           </div>
 

@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
-import { createRazorpayClient, getRazorpayKeyId } from "~/lib/billing";
+import {
+  createRazorpayClient,
+  getRazorpayKeyId,
+  getRazorpaySubscriptionPlanId,
+} from "~/lib/billing";
+import { createRazorpayOrder } from "~/lib/razorpayCheckout";
 import {
   planById,
   resolvePlanPrice,
@@ -15,6 +20,12 @@ const inputSchema = z.object({
   planId: z.enum(["free", "starter", "pro", "agency"]),
   interval: z.enum(["monthly", "yearly"]).default("monthly"),
 });
+
+// Number of billing cycles Razorpay should attempt before the subscription ends.
+const TOTAL_CYCLES: Record<"monthly" | "yearly", number> = {
+  monthly: 120, // ~10 years
+  yearly: 10,
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,16 +68,47 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const razorpay = createRazorpayClient();
+    const razorpayPlanId = getRazorpaySubscriptionPlanId(planId, interval);
+
+    // Prefer recurring subscriptions when dashboard plan IDs are configured.
+    if (razorpayPlanId) {
+      const subscription = await razorpay.subscriptions.create({
+        plan_id: razorpayPlanId,
+        total_count: TOTAL_CYCLES[interval],
+        quantity: 1,
+        customer_notify: 1,
+        notes: {
+          userId,
+          planId,
+          interval,
+          kind: "subscription",
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          mode: "subscription" as const,
+          subscriptionId: subscription.id,
+          keyId: getRazorpayKeyId(),
+          planId,
+          interval,
+          userName: user.name,
+          userEmail: user.email ?? "",
+          userMobile: user.mobile ?? "",
+        },
+      });
+    }
+
+    // Fallback: one-time order (works with only RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET).
     const plan = planById(planId as PlanId);
     const perMonthUsd = resolvePlanPrice(plan, interval as BillingInterval);
     const totalUsd =
-      (interval as BillingInterval) === "yearly" ? perMonthUsd * 12 : perMonthUsd;
-    // Razorpay expects smallest currency unit. USD → cents.
+      interval === "yearly" ? perMonthUsd * 12 : perMonthUsd;
     const amountMinor = Math.round(totalUsd * 100);
 
-    const razorpay = createRazorpayClient();
-
-    const order = await razorpay.orders.create({
+    const order = await createRazorpayOrder({
       amount: amountMinor,
       currency: BILLING_CURRENCY,
       receipt: `${planId}_${interval}_${userId.slice(-6)}`,
@@ -81,6 +123,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
+        mode: "order" as const,
         orderId: order.id,
         keyId: getRazorpayKeyId(),
         amount: amountMinor,

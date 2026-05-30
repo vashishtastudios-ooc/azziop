@@ -3,7 +3,10 @@ import { auth } from '~/server/auth';
 import { db } from '~/server/db';
 import { getModel } from '~/lib/gemini';
 import { LAYER2_SYSTEM_PROMPT, buildLayer2UserPrompt } from '~/lib/prompts/layer2-campaign-strategy';
-import { checkQuota, incrementUsage } from '~/lib/quota';
+import { canAccessLayer } from '~/lib/quota';
+import { spendForAction, grantCredits, costForAction } from '~/lib/credits';
+import { CREDIT_COSTS } from '~/lib/pricing';
+import { randomUUID } from 'crypto';
 import type { BrandDNA } from '~/types';
 
 export async function POST(req: NextRequest) {
@@ -37,17 +40,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    const quota = await checkQuota(session.user.id, 'campaigns', 3);
-    if (!quota.allowed) {
+    const layerAccess = await canAccessLayer(session.user.id, 2);
+    if (!layerAccess.allowed) {
+      return NextResponse.json(
+        { error: 'Your plan does not include campaign generation', plan: layerAccess.planId, upgradeUrl: '/pricing' },
+        { status: 403 }
+      );
+    }
+
+    // Reserve credits up front (atomic) so concurrent requests can't overspend.
+    const reserve = await spendForAction(session.user.id, 'campaign', 1);
+    if (!reserve.ok) {
       return NextResponse.json(
         {
-          error: 'Plan limit reached',
-          limit: quota.limit,
-          used: quota.used,
-          plan: quota.planId,
+          error: 'Not enough credits',
+          required: costForAction('campaign', 1),
+          balance: reserve.balance,
+          creditCost: CREDIT_COSTS.campaign,
           upgradeUrl: '/pricing',
         },
-        { status: 403 }
+        { status: 402 }
       );
     }
 
@@ -81,6 +93,14 @@ export async function POST(req: NextRequest) {
       }
     } catch (error) {
       console.error('Failed to parse campaigns JSON:', error);
+      // Refund the reservation — nothing was produced.
+      await grantCredits({
+        userId: session.user.id,
+        amount: costForAction('campaign', 1),
+        reason: 'refund',
+        sourceId: `refund:campaign:${randomUUID()}`,
+        metadata: { reason: 'parse_failure' },
+      });
       return NextResponse.json(
         { error: 'Failed to parse campaign generation response' },
         { status: 500 }
@@ -120,7 +140,16 @@ export async function POST(req: NextRequest) {
       )
     );
 
-    await incrementUsage(session.user.id, 'campaigns', savedCampaigns.length);
+    // If the model returned nothing usable, refund the reservation.
+    if (savedCampaigns.length === 0) {
+      await grantCredits({
+        userId: session.user.id,
+        amount: costForAction('campaign', 1),
+        reason: 'refund',
+        sourceId: `refund:campaign:${randomUUID()}`,
+        metadata: { reason: 'no_campaigns' },
+      });
+    }
 
     return NextResponse.json({
       success: true,

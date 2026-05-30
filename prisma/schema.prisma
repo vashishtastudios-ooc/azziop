@@ -1,4 +1,4 @@
-// NoPain Marketing — Prisma Schema
+// Azziop — Prisma Schema
 // AI Campaign Generator Data Model
 
 generator client {
@@ -32,6 +32,9 @@ model User {
   razorpaySubscriptionId String?
   razorpayOrderId    String?
   razorpayPaymentId  String?
+  /// Cached credit balance. Source of truth is the sum of CreditLedger rows.
+  creditBalance      Int      @default(0)
+  /// Legacy — migrated into creditBalance. Kept to avoid data loss.
   bonusImageCredits  Int      @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -39,6 +42,34 @@ model User {
   projects              Project[]
   scheduledSocialPosts  ScheduledSocialPost[]
   usageRecords          UsageRecord[]
+  creditLedger          CreditLedger[]
+}
+
+// ─── Credit ledger (append-only) ──────────────
+// Every grant (+) and spend (-) is one row. `sourceId` is a unique idempotency
+// key so webhook retries and concurrent requests can never double-apply.
+
+model CreditLedger {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount       Int      // positive = grant, negative = spend
+  reason       String   // plan_grant | topup | spend_image | spend_campaign | refund | migration
+  balanceAfter Int
+  sourceId     String?  @unique
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// ─── Webhook idempotency ──────────────────────
+
+model ProcessedWebhook {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId   String   @unique
+  event     String?
+  createdAt DateTime @default(now())
 }
 
 // ─── Project (one per URL analysis) ───────────

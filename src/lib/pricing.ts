@@ -4,12 +4,31 @@ export type BillingInterval = "monthly" | "yearly";
 export const YEARLY_BILLING_DISCOUNT = 0.25;
 export const BILLING_CURRENCY: "USD" = "USD";
 
+// ─── Credit costs ────────────────────────────────────────────────
+// Single source of truth for what each billable action costs. Reprice the
+// entire product by editing these numbers — no schema migration needed.
+// Tie to real provider cost: sell-price-per-credit ≈ (AI cost / credits) × margin.
+
+export const CREDIT_COSTS = {
+  /** One generated AI image (layer 5). */
+  image: 10,
+  /** One campaign strategy set (layer 2). */
+  campaign: 30,
+} as const;
+
+export type CreditAction = keyof typeof CREDIT_COSTS;
+
+/** Rough "images" equivalent for a credit amount — used for UI copy only. */
+export function creditsToApproxImages(credits: number): number {
+  return Math.floor(credits / CREDIT_COSTS.image);
+}
+
 export type PlanLimits = {
-  campaignsPerMonth: number | null;
-  aiImagesPerMonth: number | null;
-  /** For the Free plan this is a lifetime cap (enforced in quota.ts). */
-  aiImagesLifetime: number | null;
+  /** Credits granted each billing cycle (one-time for Free). */
+  monthlyCredits: number;
+  /** Max layers in the AI pipeline this plan can reach. null = all. */
   aiLayers: number | null;
+  /** Max concurrent projects/workspaces. null = unlimited. */
   projects: number | null;
   teamMembers: number | null;
   whiteLabel: boolean;
@@ -26,7 +45,7 @@ export type PricingPlan = {
   id: PlanId;
   name: string;
   description: string;
-  /** Price in USD. This is the single source of truth for billing. */
+  /** Price in USD for display. Actual charge comes from the Razorpay plan. */
   monthlyPriceUsd: number;
   highlight: boolean;
   badge?: string;
@@ -38,12 +57,12 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: "free",
     name: "Free",
-    description: "Try the platform with a small one-time trial",
+    description: "Try the platform with a one-time credit trial",
     monthlyPriceUsd: 0,
     highlight: false,
     features: [
+      { text: "60 credits (one-time) — ~6 AI images", included: true },
       { text: "1 project", included: true },
-      { text: "5 AI images (one-time trial)", included: true },
       { text: "Up to 3 AI layers", included: true },
       { text: "Watermarked exports", included: true },
       { text: "Community support", included: true },
@@ -51,9 +70,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       { text: "White-label exports", included: false },
     ],
     limits: {
-      campaignsPerMonth: 2,
-      aiImagesPerMonth: null,
-      aiImagesLifetime: 5,
+      monthlyCredits: 60,
       aiLayers: 3,
       projects: 1,
       teamMembers: 1,
@@ -69,19 +86,16 @@ export const PRICING_PLANS: PricingPlan[] = [
     monthlyPriceUsd: 19,
     highlight: false,
     features: [
-      { text: "3 campaigns per month", included: true },
-      { text: "15 AI images per month", included: true },
+      { text: "300 credits / month", included: true },
+      { text: "~30 AI images or 10 campaigns", included: true },
       { text: "Full 6-layer AI pipeline", included: true },
       { text: "Up to 2 projects", included: true },
-      { text: "Watermarked exports", included: true },
       { text: "Email support", included: true },
       { text: "Social scheduling", included: false },
       { text: "White-label exports", included: false },
     ],
     limits: {
-      campaignsPerMonth: 3,
-      aiImagesPerMonth: 15,
-      aiImagesLifetime: null,
+      monthlyCredits: 300,
       aiLayers: 6,
       projects: 2,
       teamMembers: 1,
@@ -98,19 +112,16 @@ export const PRICING_PLANS: PricingPlan[] = [
     highlight: true,
     badge: "Most Popular",
     features: [
-      { text: "10 campaigns per month", included: true },
-      { text: "50 AI images per month", included: true },
+      { text: "800 credits / month", included: true },
+      { text: "~80 AI images or 26 campaigns", included: true },
       { text: "Full 6-layer AI pipeline", included: true },
       { text: "Up to 5 projects", included: true },
       { text: "Up to 3 team members", included: true },
       { text: "Social scheduling", included: true },
       { text: "Priority support", included: true },
-      { text: "White-label exports", included: false },
     ],
     limits: {
-      campaignsPerMonth: 10,
-      aiImagesPerMonth: 50,
-      aiImagesLifetime: null,
+      monthlyCredits: 800,
       aiLayers: 6,
       projects: 5,
       teamMembers: 3,
@@ -126,19 +137,16 @@ export const PRICING_PLANS: PricingPlan[] = [
     monthlyPriceUsd: 99,
     highlight: false,
     features: [
-      { text: "Unlimited campaigns", included: true },
-      { text: "200 AI images per month", included: true },
+      { text: "2,500 credits / month", included: true },
+      { text: "~250 AI images or 83 campaigns", included: true },
       { text: "Full 6-layer AI pipeline", included: true },
       { text: "Unlimited projects", included: true },
       { text: "Unlimited team members", included: true },
       { text: "Social scheduling + auto-post", included: true },
-      { text: "Priority support", included: true },
       { text: "White-label exports", included: true },
     ],
     limits: {
-      campaignsPerMonth: null,
-      aiImagesPerMonth: 200,
-      aiImagesLifetime: null,
+      monthlyCredits: 2500,
       aiLayers: 6,
       projects: null,
       teamMembers: null,
@@ -152,14 +160,14 @@ export const PRICING_PLANS: PricingPlan[] = [
 export const DEFAULT_PLAN_ID: PlanId = "free";
 
 // ─── One-time credit packs (top-ups) ─────────────────────────────
-// These are extra images a user can buy on top of their monthly quota.
-// Sold as a one-time Razorpay order, credits land in `User.bonusImageCredits`.
+// Bought as a one-time Razorpay order. Credits never expire and stack on top
+// of the monthly plan allotment.
 
 export type CreditPack = {
   id: string;
   name: string;
   priceUsd: number;
-  images: number;
+  credits: number;
   savings?: string;
   highlight?: boolean;
 };
@@ -169,13 +177,13 @@ export const CREDIT_PACKS: CreditPack[] = [
     id: "pack_small",
     name: "Small pack",
     priceUsd: 9,
-    images: 20,
+    credits: 200,
   },
   {
     id: "pack_medium",
     name: "Medium pack",
     priceUsd: 29,
-    images: 75,
+    credits: 750,
     savings: "Save $5",
     highlight: true,
   },
@@ -183,7 +191,7 @@ export const CREDIT_PACKS: CreditPack[] = [
     id: "pack_large",
     name: "Large pack",
     priceUsd: 79,
-    images: 250,
+    credits: 2500,
     savings: "Save $33",
   },
 ];
@@ -211,4 +219,42 @@ export function planById(planId: PlanId): PricingPlan {
 
 export function isPlanId(value: unknown): value is PlanId {
   return value === "free" || value === "starter" || value === "pro" || value === "agency";
+}
+
+export function monthlyCreditsForPlan(planId: PlanId): number {
+  return planById(planId).limits.monthlyCredits;
+}
+
+// ─── Effective plan (expiry enforcement) ─────────────────────────
+// A user keeps their paid plan only while the subscription is active or the
+// paid-through date is still in the future. Otherwise they fall back to Free.
+
+export type SubscriptionFields = {
+  planId?: string | null;
+  subscriptionStatus?: string | null;
+  subscriptionPeriodEnd?: Date | null;
+};
+
+export function effectivePlanId(user: SubscriptionFields, now = new Date()): PlanId {
+  const planId = isPlanId(user.planId) ? user.planId : DEFAULT_PLAN_ID;
+  if (planId === "free") return "free";
+
+  const status = user.subscriptionStatus ?? "";
+  const periodEnd = user.subscriptionPeriodEnd ?? null;
+
+  const stillActive = status === "active" || status === "authenticated";
+  const withinPaidWindow = periodEnd !== null && periodEnd.getTime() > now.getTime();
+
+  return stillActive || withinPaidWindow ? planId : "free";
+}
+
+// ─── Razorpay subscription plan IDs ──────────────────────────────
+// Created once in the Razorpay dashboard; the IDs live in env vars so billing
+// amounts have a single source of truth.
+
+export function razorpayPlanEnvKey(
+  planId: Exclude<PlanId, "free">,
+  interval: BillingInterval,
+): string {
+  return `RAZORPAY_PLAN_${planId.toUpperCase()}_${interval.toUpperCase()}`;
 }

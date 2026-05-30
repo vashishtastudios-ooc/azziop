@@ -5,16 +5,19 @@ import { Inter } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { SessionProvider } from "~/components/providers/SessionProvider";
+import { SITE_URL } from "~/lib/site";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "NoPain Marketing",
-    template: "%s | NoPain Marketing",
+    default: "Azziop",
+    template: "%s | Azziop",
   },
   description:
-    "NoPain Marketing — AI-powered campaign generator. Drop any URL and get brand DNA extraction, campaign strategies, and ready-to-post social media creatives in seconds.",
+    "Azziop is an AI-powered marketing platform to turn any website URL into brand DNA, campaign strategies, and ready-to-publish social media creatives.",
   keywords: [
-    "NoPain Marketing",
+    "Azziop",
+    "azziop",
     "AI marketing",
     "campaign generator",
     "brand DNA",
@@ -23,9 +26,9 @@ export const metadata: Metadata = {
     "marketing automation",
     "creative director AI",
   ],
-  authors: [{ name: "NoPain Marketing" }],
-  creator: "NoPain Marketing",
-  publisher: "NoPain Marketing",
+  authors: [{ name: "Azziop" }],
+  creator: "Azziop",
+  publisher: "Azziop",
 
   icons: {
     icon: "/favicon.ico",
@@ -33,29 +36,33 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
 
+  alternates: {
+    canonical: "/",
+  },
+
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://nopainmarketing.com",
-    siteName: "NoPain Marketing",
-    title: "NoPain Marketing — URL to Campaign in Seconds",
+    url: SITE_URL,
+    siteName: "Azziop",
+    title: "Azziop — URL to Campaign in Seconds",
     description:
-      "AI-powered marketing suite. Extract brand DNA, generate campaign strategies, and create ready-to-post social media creatives from any URL.",
+      "Azziop helps teams extract brand DNA, generate campaign strategies, and create ready-to-publish social creatives from any URL.",
     images: [
       {
         url: "/og-banner.png",
         width: 1200,
         height: 630,
-        alt: "NoPain Marketing — AI Campaign Generator",
+        alt: "Azziop — AI Campaign Generator",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "NoPain Marketing — URL to Campaign in Seconds",
+    title: "Azziop — URL to Campaign in Seconds",
     description:
-      "AI-powered marketing suite. Extract brand DNA, generate strategies, and create ready-to-post creatives.",
+      "Azziop helps you extract brand DNA, generate strategies, and create ready-to-publish creatives with AI.",
     images: ["/og-banner.png"],
   },
 };

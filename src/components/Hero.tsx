@@ -56,7 +56,7 @@ export function Hero() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8"
         >
           <Sparkles className="w-4 h-4 text-[var(--hero-blue)]" />
-          <span className="text-sm text-surface-300">Powered by Gemini Pro</span>
+          <span className="text-sm text-surface-300">Powered by the latest AI models</span>
         </motion.div>
 
         {/* Heading */}

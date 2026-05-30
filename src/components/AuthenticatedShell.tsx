@@ -6,7 +6,7 @@ import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { FolderOpen, Dna, Target, LogOut, ChevronDown, Sparkles, Menu, X, CalendarClock, CreditCard } from 'lucide-react';
+import { FolderOpen, Dna, Target, LogOut, ChevronDown, Sparkles, Menu, X, CalendarClock, CreditCard, Coins } from 'lucide-react';
 import { usePipelineStore } from '@/store/pipeline';
 import type { WebsiteData } from '@/types';
 import { api } from '~/trpc/react';
@@ -129,8 +129,8 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
           <Sparkles className="w-4 h-4 text-white" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-white text-sm font-semibold leading-none truncate" title={workspaceBrandLine ?? 'NoPain'}>
-            {workspaceBrandLine ?? 'NoPain'}
+          <p className="text-white text-sm font-semibold leading-none truncate" title={workspaceBrandLine ?? 'Azziop'}>
+            {workspaceBrandLine ?? 'Azziop'}
           </p>
           <p className="text-surface-500 text-[11px] mt-1">Workspace</p>
         </div>
@@ -194,6 +194,18 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              href="/credits"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-200 bg-amber-500/15 border border-amber-400/30 hover:bg-amber-500/25 transition-colors"
+              title="View credit activity"
+            >
+              <Coins className="w-3.5 h-3.5" />
+              {typeof profile?.creditBalance === 'number'
+                ? profile.creditBalance.toLocaleString()
+                : '—'}
+              <span className="hidden sm:inline">credits</span>
+            </Link>
+
             <Link
               href="/pricing"
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-indigo-200 bg-indigo-500/15 border border-indigo-400/30 hover:bg-indigo-500/25 transition-colors"
