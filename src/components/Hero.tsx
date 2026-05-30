@@ -1,218 +1,180 @@
 'use client';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, Link2, Loader2, ArrowRight } from 'lucide-react';
-import { usePipelineStore, useIsLoading, useCurrentStep } from '@/store/pipeline';
+import { useRef } from 'react';
+import Link from 'next/link';
+import { motion, useInView } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { HeroMockup } from '~/components/marketing/HeroMockup';
+import { useCountUp } from '~/hooks/useCountUp';
+
+const TRUST_AVATARS = [
+  { bg: 'bg-violet-500', initial: 'A' },
+  { bg: 'bg-rose-400', initial: 'M' },
+  { bg: 'bg-teal-500', initial: 'S' },
+  { bg: 'bg-amber-400', initial: 'K' },
+];
+
+function HeroStat({
+  value,
+  suffix,
+  unitSuffix,
+  label,
+  enabled,
+  decimals = 0,
+}: {
+  value: number;
+  suffix?: string;
+  unitSuffix?: string;
+  label: string;
+  enabled: boolean;
+  decimals?: number;
+}) {
+  const count = useCountUp(value, enabled, 1400, decimals);
+
+  return (
+    <div>
+      <p className="text-3xl sm:text-4xl font-display font-bold text-neutral-900 tracking-tight">
+        {count}
+        {suffix && <span className="text-[#FAD400]">{suffix}</span>}
+        {unitSuffix && <span className="text-[#FAD400] font-mono text-2xl">{unitSuffix}</span>}
+      </p>
+      <p className="text-sm text-neutral-500 mt-1 font-light">{label}</p>
+    </div>
+  );
+}
 
 export function Hero() {
-  const [url, setUrl] = useState('');
-  const runPipeline = usePipelineStore((state) => state.runPipeline);
-  const isLoading = useIsLoading();
-  const currentStep = useCurrentStep();
-  const status = usePipelineStore((state) => state.status);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const statsInView = useInView(statsRef, { once: true, margin: '-80px' });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url.trim() || isLoading) return;
-    try {
-      await runPipeline(url.trim());
-    } catch {
-      // `runPipeline` sets store `error` / `status`; avoid unhandled rejection
-    }
+  const scrollToDemo = () => {
+    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <section className="relative min-h-screen overflow-hidden pt-16 pb-12 px-4 lg:px-8">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-surface-950 via-surface-900 to-surface-950" />
-      <div className="absolute inset-0 bg-radial-glow opacity-50" />
+    <section className="relative overflow-hidden bg-white pt-24 pb-16 lg:pb-24 px-4 lg:px-8">
+      {/* Dot grid + noise atmosphere */}
+      <div
+        className="absolute inset-0 opacity-[0.35] pointer-events-none marketing-dot-grid"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%224%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/%3E%3C/svg%3E')]"
+        aria-hidden
+      />
 
-      {/* Moving spotlight effect */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-violet-500/5 to-rose-500/10" />
-        <motion.div
-          animate={{
-            background: [
-              'radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 80% 50%, rgba(139, 92, 246, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 50% 80%, rgba(244, 63, 94, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.3) 0%, transparent 50%)'
-            ]
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute inset-0"
-        />
-      </div>
-
-      {/* Main content container */}
-      <div className="relative max-w-3xl mx-auto flex flex-col items-center justify-center min-h-[calc(100vh-8rem)]">
-
-        {/* Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-8"
-        >
-          <Sparkles className="w-4 h-4 text-[var(--hero-blue)]" />
-          <span className="text-sm text-surface-300">Powered by the latest AI models</span>
-        </motion.div>
-
-        {/* Heading */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-4xl md:text-5xl lg:text-7xl font-display font-bold tracking-tight text-white mb-6 leading-[1.1] text-center"
-        >
-          URL to{' '}
-          <span className="text-[var(--hero-blue)]">Campaign</span>
-          <br />
-          in seconds
-        </motion.h1>
-
-        {/* Underline accent */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="w-20 h-1 bg-[var(--hero-orange)] mb-6"
-        />
-
-        {/* Description */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-lg text-surface-400 max-w-xl mb-8 leading-relaxed text-center"
-        >
-          Enter any website URL and our 6-layer AI pipeline extracts brand DNA, generates marketing strategies, and creates ready-to-use social media creatives.
-        </motion.p>
-
-        {/* Feature pills */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="flex flex-wrap justify-center gap-3 mb-10"
-        >
-          {[
-            { label: 'Brand DNA Extraction' },
-            { label: 'Campaign Strategy' },
-            { label: 'Visual Creatives' },
-          ].map(({ label }) => (
-            <span
-              key={label}
-              className="px-3 py-1.5 text-xs uppercase tracking-wider text-surface-400 
-                       border border-surface-700 rounded-full bg-surface-800/50"
+      <div className="relative max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left column */}
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-200 bg-white mb-6"
             >
-              {label}
-            </span>
-          ))}
-        </motion.div>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FAD400] opacity-60" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FAD400]" />
+              </span>
+              <span className="text-xs font-mono text-neutral-700 uppercase tracking-wide">
+                AI-Powered Marketing Engine
+              </span>
+            </motion.div>
 
-        {/* URL Prompt - Campaigns-style */}
-        <motion.form
-          onSubmit={handleSubmit}
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="w-full max-w-3xl mx-auto mb-8"
-        >
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Link2 className="w-5 h-5 text-[var(--hero-blue)]" />
-            <span className="text-surface-300 text-sm font-medium">Paste your website URL</span>
-          </div>
+            <motion.h1
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.08 }}
+              className="text-4xl sm:text-5xl lg:text-6xl xl:text-[3.5rem] font-display font-bold tracking-tight leading-[1.08] mb-4"
+            >
+              <span className="text-[#FAD400]">URL to</span>
+              <br />
+              <span className="text-[#FAD400]">Campaign</span>
+              <br />
+              <span className="text-neutral-900">in Seconds.</span>
+            </motion.h1>
 
-          <div className="relative rounded-2xl border border-surface-700 bg-surface-800/50 backdrop-blur-sm p-1.5 shadow-xl shadow-black/20 focus-within:border-[var(--hero-blue)]/50 focus-within:ring-2 focus-within:ring-[var(--hero-blue)]/20 transition-all duration-300">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://yourbrand.com or any website..."
-                className="flex-1 bg-transparent text-white placeholder-surface-500 px-5 py-4 sm:py-3.5 focus:outline-none text-base leading-relaxed min-h-[52px]"
-                disabled={isLoading}
-                autoComplete="url"
-              />
-              <button
-                type="submit"
-                disabled={!url.trim() || isLoading}
-                className="flex items-center justify-center gap-2 px-6 py-3.5 sm:py-3 rounded-xl bg-gradient-to-r from-[var(--hero-blue)] to-indigo-600 hover:from-[#4a6cf7] hover:to-indigo-500 text-white font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[var(--hero-blue)]/25 hover:shadow-[var(--hero-blue)]/35"
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.5, delay: 0.35 }}
+              className="h-[3px] w-16 bg-[#FAD400] origin-left mb-6"
+            />
+
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-lg text-neutral-600 max-w-lg leading-relaxed mb-8 font-light"
+            >
+              Drop any website URL and watch AI extract your brand DNA, build campaign strategy,
+              and produce ready-to-post social creatives — one workflow, zero briefs.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.28 }}
+              className="flex flex-wrap items-center gap-3 mb-10"
+            >
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold text-sm marketing-cta-glow hover:-translate-y-1 transition-transform duration-200"
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span className="hidden sm:inline">Analyzing...</span>
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4" />
-                    <span>Extract Brand DNA</span>
-                    <ArrowRight className="w-4 h-4 hidden sm:block" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <p className="text-center text-surface-500 text-xs mt-3">
-            We&apos;ll analyze your site and extract brand identity in under 60 seconds.
-          </p>
-
-          {/* Quick URL chips */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
-            {['nike.com', 'starbucks.com', 'stripe.com', 'notion.so', 'linear.app'].map((chip) => (
+                Try It Free
+                <ArrowRight className="w-4 h-4" />
+              </Link>
               <button
-                key={chip}
                 type="button"
-                onClick={() => setUrl(`https://${chip}`)}
-                disabled={isLoading}
-                className="px-3 py-1.5 rounded-full text-xs font-medium text-surface-400 bg-surface-800/80 border border-surface-700 hover:border-surface-500 hover:text-surface-300 hover:bg-surface-800 transition-colors disabled:opacity-50"
+                onClick={scrollToDemo}
+                className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border border-neutral-300 bg-white text-neutral-800 font-display font-semibold text-sm hover:border-neutral-400 transition-colors"
               >
-                {chip}
+                See a Demo
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </button>
-            ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex items-center gap-3 mb-12"
+            >
+              <div className="flex -space-x-2">
+                {TRUST_AVATARS.map(({ bg, initial }) => (
+                  <div
+                    key={initial}
+                    className={`w-9 h-9 rounded-full ${bg} border-2 border-white flex items-center justify-center text-xs font-bold text-white shadow-sm`}
+                  >
+                    {initial}
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-neutral-500">
+                Trusted by <span className="font-semibold text-neutral-800">2,400+</span> marketers
+                worldwide
+              </p>
+            </motion.div>
+
+            <motion.div
+              ref={statsRef}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="grid grid-cols-3 gap-6 pt-8 border-t border-neutral-200"
+            >
+              <HeroStat value={8} suffix="×" label="Faster campaigns" enabled={statsInView} />
+              <HeroStat value={94} suffix="%" label="Brand accuracy" enabled={statsInView} />
+              <HeroStat value={30} unitSuffix="s" label="To first output" enabled={statsInView} />
+            </motion.div>
           </div>
-        </motion.form>
 
-        {/* Progressive status indicator */}
-        {status !== 'idle' && status !== 'complete' && status !== 'error' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-6 space-y-2 text-center"
-          >
-            <div className="flex items-center justify-center gap-2">
-              <motion.div
-                className="w-4 h-4 border-2 border-[var(--hero-blue)]/30 border-t-[var(--hero-blue)] rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              />
-              <span className="text-sm text-[var(--hero-blue)] font-medium">{currentStep}</span>
-            </div>
-            <p className="text-xs text-surface-500">
-              This may take up to a minute — we're analyzing your brand visually with AI.
-            </p>
-          </motion.div>
-        )}
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-5 h-8 rounded-full border-2 border-surface-600 flex items-start justify-center p-1"
-          >
-            <motion.div className="w-1 h-2 rounded-full bg-surface-500" />
-          </motion.div>
-        </motion.div>
+          {/* Right column — living mockup */}
+          <div className="lg:pl-4">
+            <HeroMockup />
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -7,6 +7,7 @@
 
 :root {
   /* Brand Colors */
+  --brand-yellow: #FAD400;
   --hero-blue: #3B5EF5;
   --hero-orange: #FF7A3D;
 
@@ -26,9 +27,10 @@
 }
 
 @theme {
-  /* Font Families */
-  --font-display: "Inter", "Geist", sans-serif;
-  --font-body: "Inter", "Geist", sans-serif;
+  /* Font Families — Syne (display) + DM Sans (body) + JetBrains Mono (accents) */
+  --font-display: var(--font-syne), ui-sans-serif, sans-serif;
+  --font-body: var(--font-dm-sans), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   /* Surface Colors — Tailwind integration */
   --color-surface-50: var(--surface-50);
@@ -70,10 +72,20 @@ html {
 
 body {
   font-family: var(--font-body);
+  font-weight: 300;
   background-color: var(--surface-950);
   color: var(--surface-100);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Marketing routes override background on their shell */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
 }
 
 
@@ -219,4 +231,62 @@ body {
   .animate-slide-down {
     animation: slide-down 0.5s ease-out;
   }
+}
+
+/* ============================================
+   Marketing homepage (light hero)
+   ============================================ */
+
+.marketing-dot-grid {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.marketing-cta-glow {
+  box-shadow:
+    0 4px 14px rgba(250, 212, 0, 0.45),
+    0 0 24px rgba(250, 212, 0, 0.2);
+}
+
+.marketing-cta-glow:hover {
+  box-shadow:
+    0 8px 24px rgba(250, 212, 0, 0.5),
+    0 0 32px rgba(250, 212, 0, 0.28);
+}
+
+.marketing-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.35rem;
+  height: 2px;
+  background: var(--brand-yellow);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.marketing-nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+@keyframes marketing-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.marketing-shimmer {
+  background: linear-gradient(
+    110deg,
+    #e5e5e5 25%,
+    #f5f5f5 37%,
+    #e5e5e5 63%
+  );
+  background-size: 200% 100%;
+  animation: marketing-shimmer 1.2s infinite linear;
 }

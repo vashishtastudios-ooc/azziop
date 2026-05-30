@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +21,6 @@ import {
   User,
   Users,
   Zap,
-  Layers,
   Image,
   MessageSquare,
   Megaphone,
@@ -29,88 +29,19 @@ import {
   Star,
   Quote,
   Globe,
-  Cpu,
   Paintbrush
 } from 'lucide-react';
 import { Hero } from '../components/Hero';
-import { Navbar } from '../components/Navbar';
+import { MarketingNavbar } from '~/components/marketing/MarketingNavbar';
+import {
+  MarketingSection,
+  MarketingSectionHeader,
+} from '~/components/marketing/MarketingSection';
 
-// ============================================
-// Section Components
-// ============================================
-
-// Animated Section Wrapper
-function Section({
-  children,
-  className = '',
-  id = ''
-}: {
-  children: React.ReactNode;
-  className?: string;
-  id?: string;
-}) {
-  return (
-    <motion.section
-      id={id}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.6 }}
-      className={`relative py-24 md:py-32 px-4 lg:px-8 ${className}`}
-    >
-      {children}
-    </motion.section>
-  );
-}
-
-// Section Header
-function SectionHeader({
-  badge,
-  title,
-  subtitle,
-  align = 'center'
-}: {
-  badge?: string;
-  title: string;
-  subtitle?: string;
-  align?: 'center' | 'left';
-}) {
-  return (
-    <div className={`mb-16 md:mb-20 ${align === 'center' ? 'text-center' : ''}`}>
-      {badge && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full glass-morphism mb-6 ${align === 'center' ? 'mx-auto' : ''}`}
-        >
-          <span className="w-2 h-2 rounded-full bg-[var(--hero-blue)] animate-pulse" />
-          <span className="text-sm text-surface-300 uppercase tracking-wider">{badge}</span>
-        </motion.div>
-      )}
-      <motion.h2
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-        className="text-3xl md:text-4xl lg:text-5xl font-display font-bold tracking-tight text-white mb-4"
-        dangerouslySetInnerHTML={{ __html: title }}
-      />
-      {subtitle && (
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className={`text-lg text-surface-400 leading-relaxed ${align === 'center' ? 'max-w-2xl mx-auto' : 'max-w-xl'}`}
-        >
-          {subtitle}
-        </motion.p>
-      )}
-    </div>
-  );
-}
+const CARD =
+  'rounded-2xl bg-white border border-neutral-200 shadow-sm hover:shadow-md hover:border-[#FAD400]/35 transition-all duration-300';
+const CARD_LG =
+  'rounded-3xl bg-white border border-neutral-200 shadow-sm hover:shadow-lg hover:border-[#FAD400]/35 transition-all duration-300';
 
 // ============================================
 // 1. HOW IT WORKS SECTION
@@ -144,15 +75,14 @@ function HowItWorksSection() {
   ];
 
   return (
-    <Section id="how-it-works" className="overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 bg-mesh-gradient opacity-30" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-radial from-[var(--hero-blue)]/10 via-transparent to-transparent blur-3xl" />
+    <MarketingSection id="how-it-works" className="overflow-hidden" alt>
+      <div className="absolute inset-0 marketing-dot-grid opacity-20 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[radial-gradient(ellipse,rgba(250,212,0,0.12)_0%,transparent_70%)] pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto">
-        <SectionHeader
+        <MarketingSectionHeader
           badge="Simple Process"
-          title="Three steps to <span class='text-gradient-blue'>marketing magic</span>"
+          title="Three steps to <span class='text-[#FAD400]'>marketing magic</span>"
           subtitle="From URL to campaign-ready creatives in under 60 seconds. No design skills needed."
         />
 
@@ -175,7 +105,7 @@ function HowItWorksSection() {
                     whileInView={{ scaleX: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, delay: 0.5 + index * 0.2 }}
-                    className="h-full bg-gradient-to-r from-surface-600 via-surface-500 to-surface-600 origin-left"
+                    className="h-full bg-gradient-to-r from-neutral-200 via-[#FAD400]/60 to-neutral-200 origin-left"
                     style={{
                       maskImage: 'linear-gradient(to right, black, black 80%, transparent)',
                       WebkitMaskImage: 'linear-gradient(to right, black, black 80%, transparent)'
@@ -188,20 +118,20 @@ function HowItWorksSection() {
                     transition={{ duration: 0.4, delay: 0.8 + index * 0.2 }}
                     className="absolute right-0 top-1/2 -translate-y-1/2"
                   >
-                    <ArrowRight className="w-4 h-4 text-surface-500" />
+                    <ArrowRight className="w-4 h-4 text-neutral-400" />
                   </motion.div>
                 </div>
               )}
 
               {/* Card */}
-              <div className="relative h-full p-8 rounded-3xl bg-surface-900/50 border border-surface-800 overflow-hidden group-hover:border-surface-700 transition-all duration-500">
+              <div className={`relative h-full p-8 overflow-hidden group ${CARD_LG}`}>
                 {/* Hover Glow */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${step.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                 />
 
                 {/* Step Number - Large Background */}
-                <div className="absolute -right-4 -top-4 text-[120px] font-display font-bold text-surface-800/50 select-none leading-none">
+                <div className="absolute -right-4 -top-4 text-[120px] font-display font-bold text-neutral-100 select-none leading-none">
                   {step.number}
                 </div>
 
@@ -228,12 +158,12 @@ function HowItWorksSection() {
                   </span>
 
                   {/* Title */}
-                  <h3 className="text-xl font-display font-semibold text-white mb-3">
+                  <h3 className="text-xl font-display font-semibold text-neutral-900 mb-3">
                     {step.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-surface-400 leading-relaxed">
+                  <p className="text-neutral-600 leading-relaxed">
                     {step.description}
                   </p>
                 </div>
@@ -250,7 +180,7 @@ function HowItWorksSection() {
           ))}
         </div>
       </div>
-    </Section>
+    </MarketingSection>
   );
 }
 
@@ -298,32 +228,13 @@ function FeaturesSection() {
   ];
 
   return (
-    <Section className="bg-surface-950">
-      {/* Decorative Grid */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-50" />
-
-      {/* Floating Orbs */}
-      <motion.div
-        animate={{
-          y: [0, -30, 0],
-          x: [0, 20, 0]
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-20 left-10 w-64 h-64 rounded-full bg-gradient-radial from-[var(--hero-blue)]/20 to-transparent blur-3xl"
-      />
-      <motion.div
-        animate={{
-          y: [0, 20, 0],
-          x: [0, -30, 0]
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-20 right-10 w-80 h-80 rounded-full bg-gradient-radial from-[var(--hero-orange)]/15 to-transparent blur-3xl"
-      />
+    <MarketingSection>
+      <div className="absolute inset-0 marketing-dot-grid opacity-15 pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto">
-        <SectionHeader
+        <MarketingSectionHeader
           badge="Capabilities"
-          title="Everything you need to <span class='text-gradient-orange'>dominate</span>"
+          title="Everything you need to <span class='text-[#FAD400]'>dominate</span>"
           subtitle="A complete AI marketing suite that transforms how you create campaigns."
         />
 
@@ -338,25 +249,22 @@ function FeaturesSection() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="group"
             >
-              <div className="relative h-full p-6 rounded-2xl glass-morphism border border-surface-800/50 overflow-hidden hover:border-[var(--hero-blue)]/30 transition-all duration-300">
-                {/* Shimmer Effect */}
-                <div className="absolute inset-0 shimmer-effect opacity-0 group-hover:opacity-100" />
-
+              <div className={`relative h-full p-6 overflow-hidden group ${CARD}`}>
                 {/* Tag */}
-                <span className="inline-block px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-[var(--hero-blue)] bg-[var(--hero-blue)]/10 rounded-md mb-4">
+                <span className="inline-block px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-neutral-800 bg-[#FAD400]/25 border border-[#FAD400]/40 rounded-md mb-4">
                   {feature.tag}
                 </span>
 
                 {/* Icon */}
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-surface-800 to-surface-900 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <feature.icon className="w-6 h-6 text-surface-300 group-hover:text-[var(--hero-blue)] transition-colors duration-300" />
+                <div className="w-12 h-12 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-[#FAD400]/10 transition-all duration-300">
+                  <feature.icon className="w-6 h-6 text-neutral-600 group-hover:text-neutral-900 transition-colors duration-300" />
                 </div>
 
                 {/* Content */}
-                <h3 className="text-lg font-display font-semibold text-white mb-2">
+                <h3 className="text-lg font-display font-semibold text-neutral-900 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-surface-400 leading-relaxed">
+                <p className="text-sm text-neutral-600 leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -364,7 +272,7 @@ function FeaturesSection() {
           ))}
         </div>
       </div>
-    </Section>
+    </MarketingSection>
   );
 }
 
@@ -418,33 +326,13 @@ function PipelineSection() {
   ];
 
   return (
-    <Section className="overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-surface-900 via-surface-950 to-surface-900" />
-
-      {/* Animated Lines */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ x: '-100%' }}
-            animate={{ x: '200%' }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              delay: i * 1.5,
-              ease: 'linear'
-            }}
-            className="absolute h-px bg-gradient-to-r from-transparent via-[var(--hero-blue)]/30 to-transparent"
-            style={{ top: `${20 + i * 15}%`, width: '50%' }}
-          />
-        ))}
-      </div>
+    <MarketingSection className="overflow-hidden" alt>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(250,212,0,0.08)_0%,transparent_60%)] pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto">
-        <SectionHeader
+        <MarketingSectionHeader
           badge="Technology"
-          title="6-Layer <span class='text-gradient-purple'>AI Pipeline</span>"
+          title="6-Layer <span class='text-[#FAD400]'>AI Pipeline</span>"
           subtitle="Watch your brand transform through our proprietary multi-stage AI processing system."
         />
 
@@ -452,12 +340,11 @@ function PipelineSection() {
         <div className="relative">
           {/* Central Connection */}
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-1 -translate-y-1/2">
-            <div className="h-full bg-gradient-to-r from-[var(--hero-blue)]/20 via-purple-500/30 to-[var(--hero-orange)]/20 rounded-full" />
-            {/* Animated Pulse */}
+            <div className="h-full bg-gradient-to-r from-[#FAD400]/20 via-[#FAD400]/40 to-[#FAD400]/20 rounded-full" />
             <motion.div
               animate={{ x: ['0%', '100%'] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-              className="absolute top-0 left-0 w-20 h-full bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-full"
+              className="absolute top-0 left-0 w-20 h-full bg-gradient-to-r from-transparent via-[#FAD400]/50 to-transparent rounded-full"
             />
           </div>
 
@@ -480,7 +367,7 @@ function PipelineSection() {
                   />
 
                   {/* Card */}
-                  <div className="relative p-6 rounded-2xl bg-surface-900/80 border border-surface-800 backdrop-blur-sm group-hover:border-surface-600 transition-all duration-300">
+                  <div className={`relative p-6 backdrop-blur-sm group ${CARD}`}>
                     {/* Layer Number */}
                     <motion.div
                       whileHover={{ scale: 1.1, rotate: 360 }}
@@ -510,10 +397,10 @@ function PipelineSection() {
                       >
                         Layer {layer.number}
                       </span>
-                      <h4 className="text-white font-semibold mt-1 mb-1">
+                      <h4 className="text-neutral-900 font-semibold mt-1 mb-1">
                         {layer.name}
                       </h4>
-                      <p className="text-xs text-surface-500">
+                      <p className="text-xs text-neutral-500">
                         {layer.description}
                       </p>
                     </div>
@@ -538,18 +425,18 @@ function PipelineSection() {
             { value: '∞', label: 'Possibilities' },
             { value: '100%', label: 'AI-Powered' }
           ].map((stat, index) => (
-            <div key={index} className="text-center p-6 rounded-xl bg-surface-900/30 border border-surface-800/50">
-              <div className="text-3xl md:text-4xl font-display font-bold text-gradient-blue mb-2">
+            <div key={index} className={`text-center p-6 ${CARD}`}>
+              <div className="text-3xl md:text-4xl font-display font-bold text-[#FAD400] mb-2">
                 {stat.value}
               </div>
-              <div className="text-sm text-surface-500 uppercase tracking-wider">
+              <div className="text-sm text-neutral-500 uppercase tracking-wider">
                 {stat.label}
               </div>
             </div>
           ))}
         </motion.div>
       </div>
-    </Section>
+    </MarketingSection>
   );
 }
 
@@ -607,17 +494,13 @@ function UseCasesSection() {
   ];
 
   return (
-    <Section className="bg-surface-950">
-      {/* Geometric Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-conic from-[var(--hero-blue)]/10 via-transparent to-[var(--hero-orange)]/10 blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-conic from-purple-500/10 via-transparent to-[var(--hero-blue)]/10 blur-3xl" />
-      </div>
+    <MarketingSection>
+      <div className="absolute inset-0 marketing-dot-grid opacity-15 pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto">
-        <SectionHeader
+        <MarketingSectionHeader
           badge="Industries"
-          title="Built for <span class='text-gradient-orange'>every</span> business"
+          title="Built for <span class='text-[#FAD400]'>every</span> business"
           subtitle="From startups to enterprises, our AI adapts to your unique marketing needs."
         />
 
@@ -637,11 +520,7 @@ function UseCasesSection() {
               whileHover={{ y: -8 }}
               className="group cursor-pointer"
             >
-              <div className="relative h-full p-8 rounded-3xl bg-gradient-to-br from-surface-900 to-surface-950 border border-surface-800 overflow-hidden">
-                {/* Hover Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--hero-blue)]/5 to-[var(--hero-orange)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                {/* Icon — slight scale + fade after card stagger */}
+              <div className={`relative h-full p-8 overflow-hidden group ${CARD_LG}`}>
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -651,16 +530,15 @@ function UseCasesSection() {
                     delay: index * 0.08 + 0.12,
                     ease: USE_CASE_EASE,
                   }}
-                  className="relative w-14 h-14 rounded-2xl bg-surface-800/80 flex items-center justify-center mb-6 group-hover:bg-[var(--hero-blue)]/20 transition-colors duration-300"
+                  className="relative w-14 h-14 rounded-2xl bg-[#FAD400]/15 border border-[#FAD400]/30 flex items-center justify-center mb-6 group-hover:bg-[#FAD400]/25 transition-colors duration-300"
                 >
-                  <useCase.icon className="w-7 h-7 text-surface-300 group-hover:text-[var(--hero-blue)] transition-colors duration-300" />
+                  <useCase.icon className="w-7 h-7 text-neutral-700 group-hover:text-neutral-900 transition-colors duration-300" />
                 </motion.div>
 
-                {/* Content */}
-                <h3 className="text-xl font-display font-semibold text-white mb-3">
+                <h3 className="text-xl font-display font-semibold text-neutral-900 mb-3">
                   {useCase.title}
                 </h3>
-                <p className="text-surface-400 mb-6 leading-relaxed">
+                <p className="text-neutral-600 mb-6 leading-relaxed">
                   {useCase.description}
                 </p>
 
@@ -669,7 +547,7 @@ function UseCasesSection() {
                   {useCase.examples.map((example) => (
                     <span
                       key={example}
-                      className="px-3 py-1 text-xs text-surface-400 bg-surface-800/50 rounded-full border border-surface-700/50"
+                      className="px-3 py-1 text-xs text-neutral-600 bg-neutral-50 rounded-full border border-neutral-200"
                     >
                       {example}
                     </span>
@@ -682,14 +560,14 @@ function UseCasesSection() {
                   whileHover={{ opacity: 1, x: 0 }}
                   className="absolute bottom-8 right-8"
                 >
-                  <ArrowRight className="w-5 h-5 text-[var(--hero-blue)]" />
+                  <ArrowRight className="w-5 h-5 text-[#FAD400]" />
                 </motion.div>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
-    </Section>
+    </MarketingSection>
   );
 }
 
@@ -728,30 +606,18 @@ function TestimonialsSection() {
   ];
 
   return (
-    <Section className="overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-surface-900 via-surface-950 to-surface-900" />
-
-      {/* Floating Quotes */}
-      <motion.div
-        animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-        transition={{ duration: 6, repeat: Infinity }}
-        className="absolute top-20 left-10 text-surface-800"
-      >
+    <MarketingSection className="overflow-hidden" alt>
+      <div className="absolute top-20 left-10 text-[#FAD400]/10 pointer-events-none">
         <Quote className="w-24 h-24" />
-      </motion.div>
-      <motion.div
-        animate={{ y: [0, 20, 0], rotate: [0, -5, 0] }}
-        transition={{ duration: 8, repeat: Infinity }}
-        className="absolute bottom-20 right-10 text-surface-800"
-      >
+      </div>
+      <div className="absolute bottom-20 right-10 text-[#FAD400]/10 pointer-events-none">
         <Quote className="w-32 h-32" />
-      </motion.div>
+      </div>
 
       <div className="relative max-w-7xl mx-auto">
-        <SectionHeader
+        <MarketingSectionHeader
           badge="Social Proof"
-          title="Loved by <span class='text-gradient-blue'>marketers</span> worldwide"
+          title="Loved by <span class='text-[#FAD400]'>marketers</span> worldwide"
           subtitle="Join thousands of brands transforming their marketing with AI."
         />
 
@@ -764,10 +630,10 @@ function TestimonialsSection() {
         >
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-3xl md:text-4xl font-display font-bold text-white mb-1">
+              <div className="text-3xl md:text-4xl font-display font-bold text-neutral-900 mb-1">
                 {stat.value}
               </div>
-              <div className="text-sm text-surface-500">
+              <div className="text-sm text-neutral-500">
                 {stat.label}
               </div>
             </div>
@@ -790,10 +656,7 @@ function TestimonialsSection() {
               whileHover={{ y: -8 }}
               className="group cursor-pointer"
             >
-              <div className="relative h-full p-8 rounded-3xl glass-morphism border border-surface-800/50 hover:border-[var(--hero-blue)]/30 transition-all duration-300 overflow-hidden">
-                {/* Hover Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--hero-blue)]/5 to-[var(--hero-orange)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
+              <div className={`relative h-full p-8 overflow-hidden group ${CARD_LG}`}>
                 {/* Stars */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -808,7 +671,7 @@ function TestimonialsSection() {
                 </motion.div>
 
                 {/* Quote */}
-                <p className="relative text-surface-200 leading-relaxed mb-8 text-lg group-hover:text-white transition-colors duration-300">
+                <p className="relative text-neutral-700 leading-relaxed mb-8 text-lg group-hover:text-neutral-900 transition-colors duration-300">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
 
@@ -819,22 +682,22 @@ function TestimonialsSection() {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true, margin: '-120px 0px -40px 0px' }}
                     transition={{ duration: 0.45, delay: index * 0.08 + 0.12, ease: USE_CASE_EASE }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--hero-blue)] to-[var(--hero-orange)] flex items-center justify-center text-white font-semibold text-sm shrink-0 group-hover:shadow-lg group-hover:shadow-[var(--hero-blue)]/20 transition-shadow duration-300"
+                    className="w-12 h-12 rounded-full bg-[#FAD400] flex items-center justify-center text-neutral-900 font-semibold text-sm shrink-0 group-hover:shadow-lg group-hover:shadow-[#FAD400]/30 transition-shadow duration-300"
                   >
                     {testimonial.avatar}
                   </motion.div>
                   <div>
-                    <div className="font-semibold text-white">
+                    <div className="font-semibold text-neutral-900">
                       {testimonial.author}
                     </div>
-                    <div className="text-sm text-surface-500 group-hover:text-surface-400 transition-colors duration-300">
+                    <div className="text-sm text-neutral-500 group-hover:text-neutral-600 transition-colors duration-300">
                       {testimonial.role}, {testimonial.company}
                     </div>
                   </div>
                 </div>
 
                 {/* Decorative Quote Mark */}
-                <div className="absolute top-6 right-6 text-surface-800/50 group-hover:text-[var(--hero-blue)]/20 transition-colors duration-300">
+                <div className="absolute top-6 right-6 text-neutral-200 group-hover:text-[#FAD400]/40 transition-colors duration-300">
                   <Quote className="w-8 h-8" />
                 </div>
               </div>
@@ -842,7 +705,7 @@ function TestimonialsSection() {
           ))}
         </div>
       </div>
-    </Section>
+    </MarketingSection>
   );
 }
 
@@ -880,14 +743,13 @@ function FAQSection() {
   ];
 
   return (
-    <Section className="bg-surface-950">
-      {/* Background */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-30" />
+    <MarketingSection>
+      <div className="absolute inset-0 marketing-dot-grid opacity-15 pointer-events-none" />
 
       <div className="relative max-w-4xl mx-auto">
-        <SectionHeader
+        <MarketingSectionHeader
           badge="FAQ"
-          title="Got <span class='text-gradient-purple'>questions?</span>"
+          title="Got <span class='text-[#FAD400]'>questions?</span>"
           subtitle="Everything you need to know about Azziop."
         />
 
@@ -903,10 +765,10 @@ function FAQSection() {
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full p-6 rounded-2xl bg-surface-900/50 border border-surface-800 hover:border-surface-700 transition-all duration-300 text-left group"
+                className={`w-full p-6 text-left group ${CARD}`}
               >
                 <div className="flex items-center justify-between gap-4">
-                  <h3 className="text-lg font-semibold text-white group-hover:text-[var(--hero-blue)] transition-colors duration-300">
+                  <h3 className="text-lg font-semibold text-neutral-900 group-hover:text-[#FAD400] transition-colors duration-300">
                     {faq.question}
                   </h3>
                   <motion.div
@@ -914,7 +776,7 @@ function FAQSection() {
                     transition={{ duration: 0.3 }}
                     className="flex-shrink-0"
                   >
-                    <ChevronDown className="w-5 h-5 text-surface-500" />
+                    <ChevronDown className="w-5 h-5 text-neutral-400" />
                   </motion.div>
                 </div>
 
@@ -927,7 +789,7 @@ function FAQSection() {
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden"
                     >
-                      <p className="pt-4 text-surface-400 leading-relaxed border-t border-surface-800 mt-4">
+                      <p className="pt-4 text-neutral-600 leading-relaxed border-t border-neutral-200 mt-4">
                         {faq.answer}
                       </p>
                     </motion.div>
@@ -938,7 +800,7 @@ function FAQSection() {
           ))}
         </div>
       </div>
-    </Section>
+    </MarketingSection>
   );
 }
 
@@ -946,133 +808,96 @@ function FAQSection() {
 // 7. CTA SECTION
 // ============================================
 function CTASection() {
-  return (
-    <Section className="overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--hero-blue)]/20 via-purple-500/10 to-[var(--hero-orange)]/20" />
-        <motion.div
-          animate={{
-            background: [
-              'radial-gradient(circle at 20% 50%, rgba(59, 94, 245, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 80% 50%, rgba(255, 122, 61, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.3) 0%, transparent 50%)',
-              'radial-gradient(circle at 20% 50%, rgba(59, 94, 245, 0.3) 0%, transparent 50%)'
-            ]
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute inset-0"
-        />
-      </div>
+  const router = useRouter();
 
-      {/* Floating Elements */}
-      <motion.div
-        animate={{ y: [-10, 10, -10], rotate: [0, 180, 360] }}
-        transition={{ duration: 20, repeat: Infinity }}
-        className="absolute top-10 left-[10%]"
-      >
-        <Cpu className="w-8 h-8 text-[var(--hero-blue)]/30" />
-      </motion.div>
-      <motion.div
-        animate={{ y: [10, -10, 10], rotate: [360, 180, 0] }}
-        transition={{ duration: 15, repeat: Infinity }}
-        className="absolute bottom-10 right-[15%]"
-      >
-        <Zap className="w-10 h-10 text-[var(--hero-orange)]/30" />
-      </motion.div>
-      <motion.div
-        animate={{ y: [5, -15, 5] }}
-        transition={{ duration: 12, repeat: Infinity }}
-        className="absolute top-1/3 right-[10%]"
-      >
-        <Layers className="w-6 h-6 text-purple-500/30" />
-      </motion.div>
+  return (
+    <MarketingSection className="overflow-hidden" alt>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(250,212,0,0.15)_0%,transparent_65%)] pointer-events-none" />
 
       <div className="relative max-w-4xl mx-auto text-center">
-        {/* Badge */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+          initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-morphism mb-8"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-200 bg-white mb-8"
         >
-          <Sparkles className="w-4 h-4 text-[var(--hero-blue)]" />
-          <span className="text-sm text-surface-300">Start for free</span>
+          <Sparkles className="w-4 h-4 text-[#FAD400]" />
+          <span className="text-sm text-neutral-600 font-medium">Start for free</span>
         </motion.div>
 
-        {/* Main Heading */}
         <motion.h2
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight text-white mb-6"
+          transition={{ duration: 0.5 }}
+          className="text-4xl md:text-5xl lg:text-6xl font-display font-bold tracking-tight text-neutral-900 mb-6"
         >
           Ready to transform your
           <br />
-          <span className="text-gradient-rainbow">marketing?</span>
+          <span className="text-[#FAD400]">marketing?</span>
         </motion.h2>
 
-        {/* Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="text-xl text-surface-300 mb-10 max-w-2xl mx-auto"
+          transition={{ duration: 0.45, delay: 0.1 }}
+          className="text-xl text-neutral-600 mb-10 max-w-2xl mx-auto"
         >
           Join thousands of marketers creating campaigns at the speed of thought.
           No credit card required.
         </motion.p>
 
-        {/* CTA Buttons */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.45, delay: 0.15 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="group relative px-8 py-4 bg-[var(--hero-blue)] hover:bg-[#4a6cf7] text-white font-semibold rounded-xl transition-all duration-300 flex items-center gap-3 shadow-xl shadow-[var(--hero-blue)]/25 overflow-hidden"
+            type="button"
+            onClick={() => router.push('/register')}
+            className="group inline-flex items-center gap-3 px-8 py-4 bg-[#FAD400] text-neutral-900 font-semibold rounded-xl marketing-cta-glow hover:-translate-y-1 transition-transform"
           >
-            {/* Shimmer */}
-            <div className="absolute inset-0 shimmer-effect opacity-0 group-hover:opacity-100" />
-            <span className="relative">Start Creating Now</span>
-            <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+            Start Creating Now
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
 
-          <button className="px-8 py-4 text-surface-300 hover:text-white font-semibold rounded-xl transition-all duration-300 flex items-center gap-2 border border-surface-700 hover:border-surface-500">
-            <span>See Examples</span>
+          <button
+            type="button"
+            onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+            className="group px-8 py-4 text-neutral-700 font-semibold rounded-xl border border-neutral-300 bg-white hover:border-neutral-400 flex items-center gap-2 transition-colors"
+          >
+            See Examples
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </motion.div>
 
-        {/* Trust Badges */}
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-12 flex flex-wrap items-center justify-center gap-6 text-surface-500 text-sm"
+          transition={{ duration: 0.45, delay: 0.3 }}
+          className="mt-12 flex flex-wrap items-center justify-center gap-6 text-neutral-500 text-sm"
         >
           <span className="flex items-center gap-2">
-            <Zap className="w-4 h-4" />
+            <Zap className="w-4 h-4 text-[#FAD400]" />
             Instant setup
           </span>
-          <span className="w-1 h-1 rounded-full bg-surface-600" />
+          <span className="w-1 h-1 rounded-full bg-neutral-300" />
           <span className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 text-[#FAD400]" />
             No credit card
           </span>
-          <span className="w-1 h-1 rounded-full bg-surface-600" />
+          <span className="w-1 h-1 rounded-full bg-neutral-300" />
           <span className="flex items-center gap-2">
-            <Star className="w-4 h-4" />
+            <Star className="w-4 h-4 text-[#FAD400]" />
             5 free campaigns
           </span>
         </motion.div>
       </div>
-    </Section>
+    </MarketingSection>
   );
 }
 
@@ -1081,26 +906,29 @@ function CTASection() {
 // ============================================
 function Footer() {
   return (
-    <footer className="relative py-12 px-4 lg:px-8 border-t border-surface-800">
+    <footer className="relative py-12 px-4 lg:px-8 border-t border-neutral-200 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--hero-blue)] to-[var(--hero-orange)] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-[#FAD400] flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-neutral-900" />
             </div>
-            <span className="font-display font-semibold text-white">Azziop</span>
+            <span className="font-display font-semibold text-neutral-900">Azziop</span>
           </div>
 
-          {/* Links */}
-          <div className="flex items-center gap-8 text-sm text-surface-400">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Contact</a>
+          <div className="flex items-center gap-8 text-sm text-neutral-600">
+            <Link href="/privacy" className="hover:text-neutral-900 transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-neutral-900 transition-colors">
+              Terms
+            </Link>
+            <a href="mailto:hello@azziop.com" className="hover:text-neutral-900 transition-colors">
+              Contact
+            </a>
           </div>
 
-          {/* Copyright */}
-          <div className="text-sm text-surface-500">
+          <div className="text-sm text-neutral-500">
             © {new Date().getFullYear()} Azziop. All rights reserved.
           </div>
         </div>
@@ -1127,8 +955,8 @@ export default function HomePage() {
   }
 
   return (
-    <div className="relative">
-      <Navbar />
+    <div className="relative bg-white text-neutral-900 min-h-screen font-body font-light">
+      <MarketingNavbar />
       <Hero />
       <HowItWorksSection />
       <FeaturesSection />

@@ -28,7 +28,7 @@ export function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
 
-    const isHomeLike = ['/', '/about', '/faq', '/pricing'].includes(pathname);
+    const isHomeLike = ['/', '/about', '/faq', '/pricing', '/privacy', '/terms'].includes(pathname);
 
     // Close user menu on outside click
     useEffect(() => {

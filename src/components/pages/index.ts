@@ -6,3 +6,5 @@ export { EditorPage } from './EditorPage';
 export { AboutPage } from './AboutPage';
 export { PricingPage } from './PricingPage';
 export { FAQPage } from './FAQPage';
+export { PrivacyPage } from './PrivacyPage';
+export { TermsPage } from './TermsPage';

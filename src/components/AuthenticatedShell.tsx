@@ -157,21 +157,6 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
             </Link>
           );
         })}
-        <div className="px-3 pt-2 mt-2 border-t border-surface-800/60">
-          <Link
-            href={projectId ? `/schedule?projectId=${projectId}` : '/schedule'}
-            onClick={() => setMobileSidebarOpen(false)}
-            className="flex w-full items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-pink-600/90 to-violet-600/90 hover:from-pink-500 hover:to-violet-500 border border-white/10 shadow-lg shadow-violet-500/10 transition-all"
-          >
-            <CalendarClock className="w-4 h-4 shrink-0" />
-            Schedule Instagram post
-          </Link>
-          {!projectId && (
-            <p className="text-[10px] text-surface-500 mt-2 px-1 text-center leading-snug">
-              Select a project to attach your workspace
-            </p>
-          )}
-        </div>
       </nav>
     </aside>
   );

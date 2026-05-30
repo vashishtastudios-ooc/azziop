@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -1087,9 +1088,15 @@ function Footer() {
 
           {/* Links */}
           <div className="flex items-center gap-8 text-sm text-surface-400">
-            <a href="#" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms</a>
-            <a href="#" className="hover:text-white transition-colors">Contact</a>
+            <Link href="/privacy" className="hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms
+            </Link>
+            <a href="mailto:hello@azziop.com" className="hover:text-white transition-colors">
+              Contact
+            </a>
           </div>
 
           {/* Copyright */}
