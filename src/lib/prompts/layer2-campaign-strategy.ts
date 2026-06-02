@@ -3,7 +3,108 @@
 // Model: Gemini Pro | Temperature: 0.85 | Max tokens: ~4096
 // ============================================
 
+import {
+  SchemaType,
+  type ResponseSchema,
+} from '@google/generative-ai';
 import type { BrandDNA } from '@/types';
+
+/**
+ * Structured-output schema for Layer 2. Passing this to Gemini guarantees a
+ * parseable JSON array of exactly 3 campaign objects — removes the markdown /
+ * regex extraction and the parse-failure refund path.
+ */
+export const LAYER2_RESPONSE_SCHEMA: ResponseSchema = {
+  type: SchemaType.ARRAY,
+  minItems: 3,
+  maxItems: 3,
+  items: {
+    type: SchemaType.OBJECT,
+    properties: {
+      title: { type: SchemaType.STRING },
+      goal: {
+        type: SchemaType.STRING,
+        format: 'enum',
+        enum: ['awareness', 'consideration', 'conversion'],
+      },
+      strategicAngle: { type: SchemaType.STRING },
+      narrativeHook: { type: SchemaType.STRING },
+      audiencePainPoint: { type: SchemaType.STRING },
+      emotionalLever: {
+        type: SchemaType.STRING,
+        format: 'enum',
+        enum: [
+          'aspiration',
+          'fear',
+          'belonging',
+          'curiosity',
+          'pride',
+          'relief',
+          'urgency',
+          'trust',
+        ],
+      },
+      strategicLens: {
+        type: SchemaType.STRING,
+        format: 'enum',
+        enum: [
+          'product-led',
+          'audience-identity',
+          'category-contrast',
+          'cultural-moment',
+          'problem-solution',
+          'origin-story',
+        ],
+      },
+      hookArchetype: {
+        type: SchemaType.STRING,
+        format: 'enum',
+        enum: [
+          'provocative-question',
+          'bold-statement',
+          'social-proof',
+          'contrast-reveal',
+          'micro-story',
+          'data-shock',
+        ],
+      },
+      ctaStyle: {
+        type: SchemaType.STRING,
+        format: 'enum',
+        enum: ['soft', 'medium', 'strong'],
+      },
+      visualDirection: { type: SchemaType.STRING },
+      bestPlatforms: {
+        type: SchemaType.ARRAY,
+        items: {
+          type: SchemaType.STRING,
+          format: 'enum',
+          enum: [
+            'instagram',
+            'facebook',
+            'linkedin',
+            'tiktok',
+            'pinterest',
+            'twitter',
+          ],
+        },
+      },
+    },
+    required: [
+      'title',
+      'goal',
+      'strategicAngle',
+      'narrativeHook',
+      'audiencePainPoint',
+      'emotionalLever',
+      'strategicLens',
+      'hookArchetype',
+      'ctaStyle',
+      'visualDirection',
+      'bestPlatforms',
+    ],
+  },
+};
 
 export const LAYER2_SYSTEM_PROMPT = `You are a senior Creative Director at a top performance marketing agency. You generate bold, original campaign concepts that are deeply specific to each brand — never generic.
 
@@ -103,10 +204,22 @@ export const buildLayer2UserPrompt = (
   businessOverview: string,
   userPrompt?: string,
   previousContext?: PreviousCampaignContext,
+  retryFeedback?: string[],
 ) => {
   const themeInstruction = userPrompt?.trim()
     ? `\n\nUSER REQUEST: "${userPrompt.trim()}"\nAll 3 campaigns must address this request while staying true to brand positioning.`
     : '';
+
+  // On a retry, tell the model exactly what collided last time so it can self-correct
+  // instead of re-rolling the same prompt and hoping for different output.
+  const retryInstruction =
+    retryFeedback && retryFeedback.length > 0
+      ? `\n\n❌ YOUR PREVIOUS ATTEMPT FAILED THE DIVERSITY CHECK. Fix these exact problems:\n${retryFeedback
+          .map((f) => `- ${f}`)
+          .join(
+            '\n',
+          )}\nAssign each of the 3 campaigns a DISTINCT goal, emotionalLever, strategicLens, and hookArchetype. Do not reuse any value across the 3.`
+      : '';
 
   let previousInstruction = '';
   if (previousContext) {
@@ -157,7 +270,7 @@ ${businessOverview.slice(0, 2000)}
 💡 CREATIVE DIRECTION — use these as MANDATORY constraints:
 - Campaign 1 tone: ${suggestedTones[0]} — creative angle inspired by: ${suggestedAngles[0]}
 - Campaign 2 tone: ${suggestedTones[1]} — creative angle inspired by: ${suggestedAngles[1]}
-- Campaign 3 tone: ${suggestedTones[2]} — creative angle inspired by: ${suggestedAngles[2]}${themeInstruction}${previousInstruction}
+- Campaign 3 tone: ${suggestedTones[2]} — creative angle inspired by: ${suggestedAngles[2]}${themeInstruction}${previousInstruction}${retryInstruction}
 
 Generate 3 campaigns as a JSON array. Each must:
 1. Target a DIFFERENT funnel stage (awareness, consideration, conversion — in any order)

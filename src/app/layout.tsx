@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   publisher: "Azziop",
 
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: "/logoazziop.png",
+    shortcut: "/logoazziop.png",
+    apple: "/logoazziop.png",
   },
 
   alternates: {

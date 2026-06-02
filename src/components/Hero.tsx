@@ -52,7 +52,7 @@ export function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white pt-24 pb-16 lg:pb-24 px-4 lg:px-8">
+    <section className="relative overflow-hidden bg-white pt-[7.5rem] pb-16 lg:pb-24 px-4 lg:px-8">
       {/* Dot grid + noise atmosphere */}
       <div
         className="absolute inset-0 opacity-[0.35] pointer-events-none marketing-dot-grid"

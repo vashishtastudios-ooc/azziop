@@ -959,93 +959,95 @@ export function CreativesPage() {
         </motion.div>
 
         {/* Campaign Info Sidebar + Creatives */}
-        <div className="flex gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row">
           {/* Left Sidebar */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-64 flex-shrink-0 space-y-4"
+            className="w-full lg:w-72 lg:flex-shrink-0 space-y-4 lg:sticky lg:top-24 self-start"
           >
-            {/* Campaign Card */}
-            <div className="card p-4">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-[#FAD400]/15 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-4 h-4 text-[#FAD400]" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+              {/* Campaign Card */}
+              <div className="card p-4 sm:col-span-2 lg:col-span-1">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-[#FAD400]/15 flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-4 h-4 text-[#FAD400]" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-semibold text-[#FAD400] text-sm">{selectedCampaign?.title}</h3>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-display font-semibold text-[#FAD400] text-sm">{selectedCampaign?.title}</h3>
-                </div>
+                <p className="text-xs text-neutral-600 leading-relaxed">
+                  {selectedCampaign?.strategicAngle?.slice(0, 150)}...
+                </p>
               </div>
-              <p className="text-xs text-neutral-600 leading-relaxed">
-                {selectedCampaign?.strategicAngle?.slice(0, 150)}...
-              </p>
-            </div>
 
-            {/* Generate Images Button */}
-            {!generatedImages.length && (
+              {/* Generate Images Button */}
+              {!generatedImages.length && (
+                <button
+                  type="button"
+                  onClick={handleGenerateAllImages}
+                  disabled={isGeneratingImages}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold text-sm marketing-cta-glow transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+                >
+                  {isGeneratingImages ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon className="w-4 h-4" />
+                      Generate AI Images
+                    </>
+                  )}
+                </button>
+              )}
+
               <button
                 type="button"
-                onClick={handleGenerateAllImages}
-                disabled={isGeneratingImages}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold text-sm marketing-cta-glow transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+                onClick={() => {
+                  setShowCloneModal(true);
+                  setCloneReferenceImage(null);
+                  setCloneResult(null);
+                  setCloneError(null);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                {isGeneratingImages ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <ImageIcon className="w-4 h-4" />
-                    Generate AI Images
-                  </>
-                )}
+                <Copy className="w-4 h-4" />
+                Clone & Copy
               </button>
-            )}
 
-            <button
-              type="button"
-              onClick={() => {
-                setShowCloneModal(true);
-                setCloneReferenceImage(null);
-                setCloneResult(null);
-                setCloneError(null);
-              }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Copy className="w-4 h-4" />
-              Clone & Copy
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowInfographicModal(true);
+                  setInfographicError(null);
+                  setProductInfographicUrl('');
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <LayoutTemplate className="w-4 h-4" />
+                Product Infographic
+              </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setShowInfographicModal(true);
-                setInfographicError(null);
-                setProductInfographicUrl('');
-              }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <LayoutTemplate className="w-4 h-4" />
-              Product Infographic
-            </button>
-
-            <div className="card p-4 bg-[#FAD400]/10 border-[#FAD400]/25">
-              <div className="flex items-center gap-2 mb-2">
-                <Play className="w-4 h-4 text-[#FAD400]" />
-                <span className="text-sm font-display font-semibold text-neutral-900">
-                  Try Animate feature
-                </span>
+              <div className="card p-4 bg-[#FAD400]/10 border-[#FAD400]/25 sm:col-span-2 lg:col-span-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <Play className="w-4 h-4 text-[#FAD400]" />
+                  <span className="text-sm font-display font-semibold text-neutral-900">
+                    Try Animate feature
+                  </span>
+                </div>
+                <p className="text-xs text-neutral-600 font-light">
+                  Generate animations from your campaigns in one click!
+                </p>
               </div>
-              <p className="text-xs text-neutral-600 font-light">
-                Generate animations from your campaigns in one click!
-              </p>
             </div>
           </motion.div>
 
           {/* Creatives Grid */}
           <div className="flex-1">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
               {creatives.map((creative: SocialCreative, index: number) => {
                 const cellAspect = imageAspectRatioCss(
                   imagePrompts?.find((p: ImagePrompt) => p.creativeIndex === index)?.aspectRatio,

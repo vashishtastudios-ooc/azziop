@@ -32,6 +32,7 @@ import {
   Paintbrush
 } from 'lucide-react';
 import { Hero } from '../components/Hero';
+import { AzziopLogo } from '~/components/branding/AzziopLogo';
 import { MarketingNavbar } from '~/components/marketing/MarketingNavbar';
 import {
   MarketingSection,
@@ -909,12 +910,10 @@ function Footer() {
     <footer className="relative py-12 px-4 lg:px-8 border-t border-neutral-200 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#FAD400] flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-neutral-900" />
-            </div>
-            <span className="font-display font-semibold text-neutral-900">Azziop</span>
-          </div>
+          <AzziopLogo
+            size={32}
+            wordmarkClassName="font-display font-semibold text-neutral-900"
+          />
 
           <div className="flex items-center gap-8 text-sm text-neutral-600">
             <Link href="/privacy" className="hover:text-neutral-900 transition-colors">

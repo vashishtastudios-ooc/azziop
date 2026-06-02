@@ -12,7 +12,6 @@ import {
   Target,
   LogOut,
   ChevronDown,
-  Sparkles,
   Menu,
   X,
   CalendarClock,
@@ -23,6 +22,7 @@ import { usePipelineStore } from '@/store/pipeline';
 import type { WebsiteData } from '@/types';
 import { api } from '~/trpc/react';
 import { UserAvatar } from '~/components/UserAvatar';
+import { AzziopLogo } from '~/components/branding/AzziopLogo';
 import { APP_NAV_ACTIVE, APP_NAV_IDLE, APP_SHELL_BG } from '~/lib/marketingTheme';
 
 function resolveWorkspaceBrandName(
@@ -136,9 +136,7 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
   const Sidebar = (
     <aside className="h-full bg-white border-r border-neutral-200">
       <div className="h-16 px-4 border-b border-neutral-200 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-[#FAD400] flex items-center justify-center shrink-0">
-          <Sparkles className="w-4 h-4 text-neutral-900" />
-        </div>
+        <AzziopLogo size={32} showWordmark={false} className="shrink-0" />
         <div className="min-w-0 flex-1">
           <p
             className="font-display font-bold text-neutral-900 text-sm leading-none truncate"

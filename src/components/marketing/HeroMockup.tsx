@@ -7,10 +7,10 @@ const DEMO_URL = 'mossscentsuk.com';
 const DNA_TAGS = ['Luxury', 'Bold', 'Sophisticated', 'Sensory'] as const;
 
 const CREATIVES = [
-  { label: 'Instagram caption', lines: 4 },
+  { label: 'Instagram post', lines: 4 },
   { label: 'Google Ad', lines: 3 },
   { label: 'Facebook post', lines: 4 },
-  { label: 'Email subject', lines: 2 },
+  { label: 'Instagram story', lines: 2 },
 ] as const;
 
 type Phase = 'typing' | 'progress' | 'dna' | 'creatives' | 'done';

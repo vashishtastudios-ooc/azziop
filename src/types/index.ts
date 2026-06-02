@@ -34,6 +34,42 @@ export type SocialPlatform =
   | 'pinterest'
   | 'twitter';
 
+/** Each of the 3 campaigns in a set must use a distinct lens. */
+export type StrategicLens =
+  | 'product-led'
+  | 'audience-identity'
+  | 'category-contrast'
+  | 'cultural-moment'
+  | 'problem-solution'
+  | 'origin-story';
+
+/** Each of the 3 campaigns in a set must use a distinct hook archetype. */
+export type HookArchetype =
+  | 'provocative-question'
+  | 'bold-statement'
+  | 'social-proof'
+  | 'contrast-reveal'
+  | 'micro-story'
+  | 'data-shock';
+
+export const STRATEGIC_LENSES: StrategicLens[] = [
+  'product-led',
+  'audience-identity',
+  'category-contrast',
+  'cultural-moment',
+  'problem-solution',
+  'origin-story',
+];
+
+export const HOOK_ARCHETYPES: HookArchetype[] = [
+  'provocative-question',
+  'bold-statement',
+  'social-proof',
+  'contrast-reveal',
+  'micro-story',
+  'data-shock',
+];
+
 export interface CampaignStrategy {
   title: string;
   goal: 'awareness' | 'consideration' | 'conversion';
@@ -44,6 +80,8 @@ export interface CampaignStrategy {
   ctaStyle: 'soft' | 'medium' | 'strong';
   visualDirection: string;
   bestPlatforms: SocialPlatform[];
+  strategicLens?: StrategicLens;
+  hookArchetype?: HookArchetype;
 }
 
 // ============================================

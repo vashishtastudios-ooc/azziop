@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { getModel } from "../../../lib/gemini";
 import {
   buildLayer3SystemPrompt,
   buildLayer3UserPrompt,
@@ -10,11 +9,6 @@ import {
   buildLayer4SystemPrompt,
   buildLayer4UserPrompt,
 } from "../../../lib/prompts/layer4-image-prompt";
-import {
-  LAYER2_SYSTEM_PROMPT,
-  buildLayer2UserPrompt,
-  type PreviousCampaignContext,
-} from "../../../lib/prompts/layer2-campaign-strategy";
 import {
   ALLOWED_LAYOUTS,
   ALLOWED_OVERLAYS,
@@ -29,6 +23,13 @@ import type {
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { spendForAction, grantCredits, costForAction } from "~/lib/credits";
 import { randomUUID } from "crypto";
+import {
+  buildBusinessOverview,
+  generateLayer2Campaigns,
+  saveLayer2CampaignSuggestions,
+  toCampaignStrategy,
+} from "~/server/lib/layer2CampaignService";
+import { getModel } from "~/lib/gemini";
 
 const campaignInputSchema = z.object({
   title: z.string().default("Untitled Campaign"),
@@ -51,9 +52,27 @@ const campaignInputSchema = z.object({
   ctaStyle: z.enum(["soft", "medium", "strong"]).default("medium"),
   visualDirection: z.string().default(""),
   bestPlatforms: z.array(z.string()).default([]),
+  strategicLens: z
+    .enum([
+      "product-led",
+      "audience-identity",
+      "category-contrast",
+      "cultural-moment",
+      "problem-solution",
+      "origin-story",
+    ])
+    .optional(),
+  hookArchetype: z
+    .enum([
+      "provocative-question",
+      "bold-statement",
+      "social-proof",
+      "contrast-reveal",
+      "micro-story",
+      "data-shock",
+    ])
+    .optional(),
 });
-
-const campaignStrategySchema = z.array(campaignInputSchema);
 
 const creativeInputSchema = z.array(
   z.object({
@@ -76,30 +95,6 @@ const creativeInputSchema = z.array(
       .optional(),
   }),
 );
-
-const toCampaignStrategy = (
-  campaign: {
-    title: string;
-    goal: string;
-    strategicAngle: string;
-    narrativeHook: string;
-    audiencePainPoint: string;
-    emotionalLever: string;
-    ctaStyle: string;
-    visualDirection: string;
-    bestPlatforms: string[];
-  },
-): CampaignStrategy => ({
-  title: campaign.title,
-  goal: (campaign.goal as CampaignStrategy["goal"]) ?? "awareness",
-  strategicAngle: campaign.strategicAngle,
-  narrativeHook: campaign.narrativeHook,
-  audiencePainPoint: campaign.audiencePainPoint,
-  emotionalLever: (campaign.emotionalLever as CampaignStrategy["emotionalLever"]) ?? "trust",
-  ctaStyle: (campaign.ctaStyle as CampaignStrategy["ctaStyle"]) ?? "medium",
-  visualDirection: campaign.visualDirection,
-  bestPlatforms: campaign.bestPlatforms as CampaignStrategy["bestPlatforms"],
-});
 
 /** Fallback image for a creative slot when there is no GeneratedImage — mirrors CreativesPage.getImageForCreative. */
 function defaultImageForCreativeIndex(
@@ -131,85 +126,6 @@ function resolveCampaignPreviewUrl(
   }
   return defaultImageForCreativeIndex(0, websiteData ?? null);
 }
-
-/** Check that 3 campaigns are meaningfully different from each other. */
-function checkDiversity(
-  campaigns: Array<{
-    goal: string;
-    emotionalLever: string;
-    narrativeHook: string;
-    strategicAngle: string;
-  }>,
-): string[] {
-  const issues: string[] = [];
-
-  const goals = campaigns.map((c) => c.goal);
-  if (new Set(goals).size < goals.length) {
-    issues.push(`Duplicate goals: ${goals.join(", ")}`);
-  }
-
-  const levers = campaigns.map((c) => c.emotionalLever);
-  if (new Set(levers).size < levers.length) {
-    issues.push(`Duplicate emotional levers: ${levers.join(", ")}`);
-  }
-
-  const hooks = campaigns.map((c) =>
-    c.narrativeHook
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .split(/\s+/)
-      .filter((w) => w.length > 3),
-  );
-
-  for (let i = 0; i < hooks.length; i++) {
-    for (let j = i + 1; j < hooks.length; j++) {
-      const overlap = hooks[i]!.filter((w) => hooks[j]!.includes(w));
-      const shorter = Math.min(hooks[i]!.length, hooks[j]!.length);
-      if (shorter > 0 && overlap.length / shorter > 0.5) {
-        issues.push(
-          `Hooks ${i + 1} and ${j + 1} share >50% key words: "${campaigns[i]!.narrativeHook}" vs "${campaigns[j]!.narrativeHook}"`,
-        );
-      }
-    }
-  }
-
-  const angles = campaigns.map((c) =>
-    c.strategicAngle
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .split(/\s+/)
-      .filter((w) => w.length > 3),
-  );
-
-  for (let i = 0; i < angles.length; i++) {
-    for (let j = i + 1; j < angles.length; j++) {
-      const overlap = angles[i]!.filter((w) => angles[j]!.includes(w));
-      const shorter = Math.min(angles[i]!.length, angles[j]!.length);
-      if (shorter > 0 && overlap.length / shorter > 0.4) {
-        issues.push(
-          `Strategic angles ${i + 1} and ${j + 1} overlap >40% key words`,
-        );
-      }
-    }
-  }
-
-  return issues;
-}
-
-const buildBusinessOverview = (websiteData: WebsiteData | null) => {
-  if (!websiteData) return "";
-
-  return [
-    websiteData.brandName ? `Brand: ${websiteData.brandName}` : "",
-    websiteData.tagline ? `Tagline: ${websiteData.tagline}` : "",
-    websiteData.description ? `About: ${websiteData.description}` : "",
-    websiteData.heroText ? `Hero: ${websiteData.heroText}` : "",
-    websiteData.aboutSection ? `Details: ${websiteData.aboutSection}` : "",
-    websiteData.textContent?.slice(0, 800) || "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-};
 
 export const campaignRouter = createTRPCRouter({
   getProjectCampaignSets: protectedProcedure
@@ -366,8 +282,6 @@ export const campaignRouter = createTRPCRouter({
       const businessOverview = buildBusinessOverview(
         project.websiteData as WebsiteData | null,
       );
-      const model = getModel("layer2");
-      const MAX_ATTEMPTS = 2;
 
       // Reserve credits up front (atomic). Refunded below if generation fails.
       const reserve = await spendForAction(ctx.session.user.id, "campaign", 1);
@@ -391,8 +305,7 @@ export const campaignRouter = createTRPCRouter({
         });
 
       try {
-      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-        const prevCtx: PreviousCampaignContext | undefined =
+        const prevCtx =
           input.previousContext &&
           (input.previousContext.titles.length > 0 ||
             input.previousContext.hooks.length > 0 ||
@@ -400,100 +313,31 @@ export const campaignRouter = createTRPCRouter({
             ? input.previousContext
             : undefined;
 
-        const userPromptText = buildLayer2UserPrompt(
-          brandDNA,
-          businessOverview,
-          input.userPrompt,
-          prevCtx,
-        );
-
-        const response = await model.generateContent([
-          { text: LAYER2_SYSTEM_PROMPT },
-          { text: userPromptText },
-        ]);
-
-        const llmText = response.response.text();
-        const jsonMatch = llmText.match(/\[[\s\S]*\]/);
-
-        if (!jsonMatch) {
-          if (attempt < MAX_ATTEMPTS - 1) continue;
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Campaign generation returned invalid JSON",
+        const { campaigns: generatedCampaigns, diversityIssues } =
+          await generateLayer2Campaigns({
+            brandDNA,
+            businessOverview,
+            userPrompt: input.userPrompt,
+            previousContext: prevCtx,
+            maxAttempts: 2,
           });
-        }
-
-        let parsedCampaigns: z.infer<typeof campaignStrategySchema>;
-        try {
-          parsedCampaigns = campaignStrategySchema.parse(
-            JSON.parse(jsonMatch[0]),
-          );
-        } catch {
-          if (attempt < MAX_ATTEMPTS - 1) continue;
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Unable to parse generated campaigns",
-          });
-        }
-
-        const diversityIssues = checkDiversity(parsedCampaigns);
-        if (diversityIssues.length > 0 && attempt < MAX_ATTEMPTS - 1) {
-          console.warn(
-            `[campaign.generate] Diversity check failed (attempt ${attempt + 1}):`,
-            diversityIssues,
-          );
-          continue;
-        }
 
         if (diversityIssues.length > 0) {
           console.warn(
-            `[campaign.generate] Accepting after ${MAX_ATTEMPTS} attempts despite issues:`,
+            `[campaign.generate] Accepting after retries despite issues:`,
             diversityIssues,
           );
         }
 
-        // Replace current suggestions in DB:
-        // - delete campaigns that have no creatives yet (they never reached "Generate Creatives")
-        // - insert the freshly generated suggestions
-        await ctx.db.campaign.deleteMany({
-          where: {
-            projectId: input.projectId,
-            creatives: { none: {} },
-          },
+        const { savedCampaigns } = await saveLayer2CampaignSuggestions({
+          db: ctx.db,
+          projectId: input.projectId,
+          campaigns: generatedCampaigns,
+          replacePending: true,
         });
-
-        const existing = await ctx.db.campaign.findMany({
-          where: { projectId: input.projectId },
-          select: { setIndex: true },
-        });
-
-        const maxSetIndex = existing.length
-          ? Math.max(...existing.map((c: { setIndex: number }) => c.setIndex))
-          : 0;
-        const nextSetIndex = maxSetIndex + 1;
-
-        const savedCampaigns = await Promise.all(
-          parsedCampaigns.map((campaign, index) =>
-            ctx.db.campaign.create({
-              data: {
-                projectId: input.projectId,
-                title: campaign.title || `Campaign ${index + 1}`,
-                goal: campaign.goal,
-                strategicAngle: campaign.strategicAngle,
-                narrativeHook: campaign.narrativeHook,
-                audiencePainPoint: campaign.audiencePainPoint,
-                emotionalLever: campaign.emotionalLever,
-                ctaStyle: campaign.ctaStyle,
-                visualDirection: campaign.visualDirection,
-                bestPlatforms: campaign.bestPlatforms,
-                setIndex: nextSetIndex,
-              },
-            }),
-          ),
-        );
 
         return {
-          campaigns: savedCampaigns.map((campaign: any) =>
+          campaigns: savedCampaigns.map((campaign) =>
             toCampaignStrategy({
               title: campaign.title,
               goal: campaign.goal,
@@ -504,15 +348,11 @@ export const campaignRouter = createTRPCRouter({
               ctaStyle: campaign.ctaStyle,
               visualDirection: campaign.visualDirection,
               bestPlatforms: campaign.bestPlatforms,
+              strategicLens: campaign.strategicLens,
+              hookArchetype: campaign.hookArchetype,
             }),
           ),
         };
-      }
-
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Campaign generation failed after retries",
-      });
       } catch (e) {
         await refundCampaign();
         throw e;

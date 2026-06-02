@@ -9,7 +9,7 @@ export const MKT_BADGE =
   'inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-200 bg-white';
 
 export const MKT_BTN_PRIMARY =
-  'inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold text-sm marketing-cta-glow hover:-translate-y-0.5 transition-transform duration-200';
+  'inline-flex items-center justify-center gap-2 px-6 py-3.5 min-h-[3rem] rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold text-sm leading-normal marketing-cta-glow hover:-translate-y-0.5 transition-transform duration-200';
 
 export const MKT_BTN_SECONDARY =
   'inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-neutral-300 bg-white text-neutral-800 font-display font-semibold text-sm hover:border-neutral-400 transition-colors';

@@ -3,7 +3,11 @@
 // Handles all interactions with Google's Gemini models
 // ============================================
 
-import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
+import {
+  GoogleGenerativeAI,
+  GenerativeModel,
+  type ResponseSchema,
+} from '@google/generative-ai';
 import { env } from '~/env';
 
 // Initialize the Gemini client
@@ -55,17 +59,45 @@ export const MODEL_CONFIGS = {
   },
 };
 
+/** Optional overrides for structured output (Gemini JSON mode). */
+export interface GetModelOptions {
+  /** When set, Gemini returns schema-validated JSON — no markdown/regex parsing needed. */
+  responseSchema?: ResponseSchema;
+  responseMimeType?: 'application/json' | 'text/plain';
+}
+
 // Get a configured model for a specific layer
-export const getModel = (layer: keyof typeof MODEL_CONFIGS): GenerativeModel => {
+export const getModel = (
+  layer: keyof typeof MODEL_CONFIGS,
+  options?: GetModelOptions,
+): GenerativeModel => {
   const client = getGeminiClient();
   const config = MODEL_CONFIGS[layer];
 
+  const hasTuning = 'temperature' in config;
+  const generationConfig =
+    hasTuning || options?.responseSchema || options?.responseMimeType
+      ? {
+          ...(hasTuning
+            ? {
+                temperature: config.temperature,
+                maxOutputTokens: config.maxOutputTokens,
+              }
+            : {}),
+          ...(options?.responseMimeType
+            ? { responseMimeType: options.responseMimeType }
+            : options?.responseSchema
+              ? { responseMimeType: 'application/json' as const }
+              : {}),
+          ...(options?.responseSchema
+            ? { responseSchema: options.responseSchema }
+            : {}),
+        }
+      : undefined;
+
   return client.getGenerativeModel({
     model: config.model,
-    generationConfig: 'temperature' in config ? {
-      temperature: config.temperature,
-      maxOutputTokens: config.maxOutputTokens,
-    } : undefined,
+    generationConfig,
   });
 };
 

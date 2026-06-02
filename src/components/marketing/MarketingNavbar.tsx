@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Menu, X, LogOut, User, ChevronDown } from 'lucide-react';
+import { Menu, X, LogOut, User, ChevronDown } from 'lucide-react';
+import { AzziopLogo } from '~/components/branding/AzziopLogo';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { api } from '~/trpc/react';
@@ -117,25 +118,18 @@ export function MarketingNavbar() {
         }}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-[111px]">
             <button
               type="button"
               onClick={() => handleNav('/')}
-              className="flex items-center gap-2.5 group"
+              className="flex items-center group"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#FAD400] flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Sparkles className="w-4 h-4 text-neutral-900" />
-              </div>
-              <span className="font-display font-bold text-neutral-900 text-lg hidden sm:block">
-                Azziop
-              </span>
-              <motion.span
-                animate={{ opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 2.2, repeat: Infinity }}
-                className="hidden sm:inline-flex px-2 py-0.5 rounded-md bg-neutral-900 text-[#FAD400] text-[10px] font-mono font-bold tracking-wider"
-              >
-                BETA
-              </motion.span>
+              <AzziopLogo
+                size={111}
+                showWordmark={false}
+                className="group-hover:scale-[1.02] transition-transform"
+                priority
+              />
             </button>
 
             <nav className="hidden md:flex items-center gap-1">

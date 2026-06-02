@@ -155,6 +155,8 @@ model Campaign {
   ctaStyle          String    // soft | medium | strong
   visualDirection   String
   bestPlatforms     String[]
+  strategicLens     String?   // product-led | audience-identity | category-contrast | cultural-moment | problem-solution | origin-story
+  hookArchetype     String?   // provocative-question | bold-statement | social-proof | contrast-reveal | micro-story | data-shock
 
   setIndex          Int       @default(0)
 
