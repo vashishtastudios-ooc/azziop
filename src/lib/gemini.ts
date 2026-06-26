@@ -53,10 +53,6 @@ export const MODEL_CONFIGS = {
     temperature: 0.1,
     maxOutputTokens: 8192,
   },
-  image: {
-    // gemini-3-pro-image-preview is the only model with image generation support
-    model: process.env.GEMINI_IMAGE_MODEL || 'gemini-3-pro-image-preview',
-  },
 };
 
 /** Optional overrides for structured output (Gemini JSON mode). */
@@ -258,80 +254,4 @@ export function parseGeminiJSON<T>(response: string): T {
     // All repair attempts failed
     throw new Error(`Failed to parse JSON from response: ${cleaned.slice(0, 200)}...`);
   }
-}
-
-// Generate image using Gemini's image generation model
-export async function generateImage(prompt: string): Promise<string> {
-  const client = getGeminiClient();
-  const model = client.getGenerativeModel({
-    model: MODEL_CONFIGS.image.model,
-  });
-
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      // @ts-expect-error - Image generation specific config
-      responseModalities: ['image', 'text'],
-    },
-  });
-
-  const response = result.response;
-
-  // Extract image from response
-  for (const candidate of response.candidates || []) {
-    for (const part of candidate.content?.parts || []) {
-      const inlineData = part as { inlineData?: { mimeType?: string; data?: string } };
-      if (inlineData.inlineData?.mimeType?.startsWith('image/')) {
-        return `data:${inlineData.inlineData.mimeType};base64,${inlineData.inlineData.data}`;
-      }
-    }
-  }
-
-  throw new Error('No image generated in response');
-}
-
-// Generate image with reference product images as multi-modal input.
-// The AI sees the actual product photos and can faithfully reproduce
-// shape, logo, label, and packaging while changing only background/composition.
-export async function generateImageWithReferences(
-  prompt: string,
-  referenceImages: { base64: string; mimeType: string }[]
-): Promise<string> {
-  const client = getGeminiClient();
-  const model = client.getGenerativeModel({
-    model: MODEL_CONFIGS.image.model,
-  });
-
-  // Build parts: text prompt first, then product reference images
-  const parts: ({ text: string } | { inlineData: { mimeType: string; data: string } })[] = [
-    { text: prompt },
-    ...referenceImages.map((img) => ({
-      inlineData: {
-        mimeType: img.mimeType,
-        data: img.base64,
-      },
-    })),
-  ];
-
-  const result = await model.generateContent({
-    contents: [{ role: 'user', parts }],
-    generationConfig: {
-      // @ts-expect-error - Image generation specific config
-      responseModalities: ['image', 'text'],
-    },
-  });
-
-  const response = result.response;
-
-  // Extract image from response
-  for (const candidate of response.candidates || []) {
-    for (const part of candidate.content?.parts || []) {
-      const inlineData = part as { inlineData?: { mimeType?: string; data?: string } };
-      if (inlineData.inlineData?.mimeType?.startsWith('image/')) {
-        return `data:${inlineData.inlineData.mimeType};base64,${inlineData.inlineData.data}`;
-      }
-    }
-  }
-
-  throw new Error('No image generated in response');
 }

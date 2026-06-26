@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import { readFile } from 'fs/promises';
 import { auth } from '~/server/auth';
-import { generateImageWithReferences } from '~/lib/gemini';
+import { generateImageWithReferences } from '~/lib/openrouter';
 
 export async function POST(req: NextRequest) {
     try {

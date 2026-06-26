@@ -31,6 +31,7 @@ import type { CampaignStrategy } from '@/types';
 import type { BrandDNA } from '@/types';
 import type { ImagePrompt } from '@/types';
 import { api } from '~/trpc/react';
+import { CREDIT_COSTS } from '~/lib/pricing';
 import { APP_BTN_PRIMARY, APP_CARD } from '~/lib/marketingTheme';
 
 const CREATIVE_ASPECT_OPTIONS: {
@@ -482,6 +483,17 @@ export function CampaignsPage() {
   const handleSuggestIdeas = async (userPrompt: string) => {
     const activeProjectId = projectId ?? projectIdFromQuery;
     if (!activeProjectId) return;
+
+    if (
+      billingInfo &&
+      billingInfo.creditBalance < CREDIT_COSTS.campaign
+    ) {
+      setUpgradeReason(
+        `Not enough credits. Generating campaigns costs ${CREDIT_COSTS.campaign} credits — your balance is ${billingInfo.creditBalance}.`,
+      );
+      setShowUpgradeModal(true);
+      return;
+    }
 
     const historyCampaigns = (projectCampaignData?.campaignSets ?? []).flatMap((s) => s.campaigns);
     const previousTitles = historyCampaigns.map((c) => c.title).filter(Boolean);

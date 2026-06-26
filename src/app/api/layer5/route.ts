@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '~/server/auth';
 import { db } from '~/server/db';
-import { generateImage, generateImageWithReferences } from '~/lib/gemini';
+import { generateImage, generateImageWithReferences, toImageAspectRatio as toGeminiAspectRatio } from '~/lib/openrouter';
 import { canAccessLayer } from '~/lib/quota';
-import { spendForAction, grantCredits, costForAction } from '~/lib/credits';
-import { CREDIT_COSTS } from '~/lib/pricing';
-import { randomUUID } from 'crypto';
-
+import { spendForAction, refundForAction, costForAction } from '~/lib/credits';
+import { CREDIT_COSTS, MAX_IMAGE_BATCH_SIZE } from '~/lib/pricing';
 /** MIME types Gemini image generation accepts as inline references (not SVG). */
 const GEMINI_REFERENCE_MIME = new Set([
     'image/png',
@@ -80,19 +78,6 @@ async function resolveImage(src: string): Promise<{ mimeType: string; base64: st
     return null;
 }
 
-const LAYER5_ASPECT_HINT: Record<string, string> = {
-    '9:16':
-        '\n\n[Output: vertical 9:16 story-style image — full-height mobile frame; compose for tall aspect, safe zones top/bottom.]',
-    '1:1': '\n\n[Output: square 1:1 image — balanced centered composition.]',
-    '4:5': '\n\n[Output: portrait 4:5 feed image — taller-than-wide Instagram portrait proportion.]',
-    '16:9': '\n\n[Output: landscape 16:9 wide image.]',
-};
-
-function appendAspectToImagePrompt(prompt: string, aspectRatio?: string): string {
-    if (!aspectRatio || !LAYER5_ASPECT_HINT[aspectRatio]) return prompt;
-    return prompt + LAYER5_ASPECT_HINT[aspectRatio];
-}
-
 const EDIT_EXISTING_PREFIX = `IMAGE EDITING INSTRUCTION:
 The FIRST image provided is the EXISTING creative. You must EDIT this image — do NOT create an entirely new image.
 Keep the product, subject, shape, form, logo, and core composition EXACTLY as they are.
@@ -115,12 +100,15 @@ VISUAL DIRECTION:
 `;
 
 export async function POST(req: NextRequest) {
-    try {
-        const session = await auth();
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+    const session = await auth();
+    if (!session?.user?.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
+    const userId = session.user.id;
+    let reservedImageCount = 0;
+
+    try {
         const { imagePrompts, projectId, referenceImages, editExisting, productInfographic } =
             await req.json();
 
@@ -131,7 +119,24 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const layerAccess = await canAccessLayer(session.user.id, 5);
+        const requestedCount = imagePrompts.length;
+        if (requestedCount === 0) {
+            return NextResponse.json(
+                { error: 'imagePrompts must contain at least one prompt' },
+                { status: 400 }
+            );
+        }
+        if (requestedCount > MAX_IMAGE_BATCH_SIZE) {
+            return NextResponse.json(
+                {
+                    error: `Too many images in one request (max ${MAX_IMAGE_BATCH_SIZE})`,
+                    maxBatch: MAX_IMAGE_BATCH_SIZE,
+                },
+                { status: 400 }
+            );
+        }
+
+        const layerAccess = await canAccessLayer(userId, 5);
         if (!layerAccess.allowed) {
             return NextResponse.json(
                 {
@@ -144,9 +149,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const requestedCount = imagePrompts.length;
         // Reserve credits up front (atomic) so concurrent jobs can't overspend.
-        const reserve = await spendForAction(session.user.id, 'image', requestedCount);
+        const reserve = await spendForAction(userId, 'image', requestedCount);
         if (!reserve.ok) {
             return NextResponse.json(
                 {
@@ -159,6 +163,7 @@ export async function POST(req: NextRequest) {
                 { status: 402 }
             );
         }
+        reservedImageCount = requestedCount;
 
         // Resolve reference images: supports both data URLs and HTTP URLs
         const refs: { mimeType: string; base64: string }[] = [];
@@ -190,18 +195,22 @@ export async function POST(req: NextRequest) {
             aspectRatio?: string;
         }>) {
             try {
-                let basePrompt = appendAspectToImagePrompt(item.prompt, item.aspectRatio);
+                let basePrompt = item.prompt;
                 if (useInfographic && refs.length > 0) {
                     basePrompt = PRODUCT_INFOGRAPHIC_PREFIX + basePrompt;
                 }
+                const imageOptions = {
+                    aspectRatio: toGeminiAspectRatio(item.aspectRatio),
+                    useProModel: useInfographic,
+                };
                 let imageUrl: string;
                 if (refs.length > 0) {
                     const prompt = editExisting
                         ? EDIT_EXISTING_PREFIX + basePrompt
                         : basePrompt;
-                    imageUrl = await generateImageWithReferences(prompt, refs);
+                    imageUrl = await generateImageWithReferences(prompt, refs, imageOptions);
                 } else {
-                    imageUrl = await generateImage(basePrompt);
+                    imageUrl = await generateImage(basePrompt, imageOptions);
                 }
                 generatedImages.push({
                     creativeIndex: item.creativeIndex,
@@ -216,13 +225,11 @@ export async function POST(req: NextRequest) {
         // Refund credits for any images that failed to generate.
         const failedCount = requestedCount - generatedImages.length;
         if (failedCount > 0) {
-            await grantCredits({
-                userId: session.user.id,
-                amount: costForAction('image', failedCount),
-                reason: 'refund',
-                sourceId: `refund:image:${randomUUID()}`,
-                metadata: { reason: 'generation_failed', failedCount },
+            await refundForAction(userId, 'image', failedCount, {
+                reason: 'generation_failed',
+                failedCount,
             });
+            reservedImageCount -= failedCount;
         }
 
         // Persist to database if projectId is provided
@@ -287,6 +294,12 @@ export async function POST(req: NextRequest) {
         });
     } catch (error) {
         console.error('Layer 5 error:', error);
+        if (reservedImageCount > 0) {
+            await refundForAction(userId, 'image', reservedImageCount, {
+                reason: 'generation_failed',
+                failedCount: reservedImageCount,
+            });
+        }
         return NextResponse.json(
             { error: error instanceof Error ? error.message : 'Failed to generate images' },
             { status: 500 }

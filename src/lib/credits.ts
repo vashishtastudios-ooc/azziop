@@ -167,3 +167,21 @@ export async function spendForAction(
     metadata: { action, count },
   });
 }
+
+/** Refund credits for a failed metered action (partial or full batch). */
+export async function refundForAction(
+  userId: string,
+  action: CreditAction,
+  count = 1,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  const amount = costForAction(action, count);
+  if (amount <= 0) return;
+  await grantCredits({
+    userId,
+    amount,
+    reason: "refund",
+    sourceId: `refund:${action}:${randomUUID()}`,
+    metadata: { action, count, ...metadata },
+  });
+}

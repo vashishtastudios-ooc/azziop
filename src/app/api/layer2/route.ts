@@ -4,9 +4,8 @@ import { db } from '~/server/db';
 import { z } from 'zod';
 import type { BrandDNA, WebsiteData } from '~/types';
 import { canAccessLayer } from '~/lib/quota';
-import { spendForAction, grantCredits, costForAction } from '~/lib/credits';
+import { spendForAction, refundForAction, costForAction } from '~/lib/credits';
 import { CREDIT_COSTS } from '~/lib/pricing';
-import { randomUUID } from 'crypto';
 import {
   buildBusinessOverview,
   generateLayer2Campaigns,
@@ -138,13 +137,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Layer 2 error:', error);
     if (reservedCredits && userId) {
-      await grantCredits({
-        userId,
-        amount: costForAction('campaign', 1),
-        reason: 'refund',
-        sourceId: `refund:campaign:${randomUUID()}`,
-        metadata: { reason: 'generation_failed' },
-      });
+      await refundForAction(userId, 'campaign', 1, { reason: 'generation_failed' });
     }
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to generate campaigns' },

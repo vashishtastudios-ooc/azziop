@@ -21,8 +21,7 @@ import type {
 } from "../../../types";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { spendForAction, grantCredits, costForAction } from "~/lib/credits";
-import { randomUUID } from "crypto";
+import { spendForAction, refundForAction, costForAction } from "~/lib/credits";
 import {
   buildBusinessOverview,
   generateLayer2Campaigns,
@@ -113,6 +112,28 @@ function defaultImageForCreativeIndex(
   }
   const logo = websiteData.logo;
   return logo && logo.length > 0 ? logo : null;
+}
+
+function parsedCreativeToSocialCreative(
+  creative: z.infer<typeof creativeInputSchema>[number],
+): SocialCreative {
+  return {
+    headline: creative.headline,
+    description: creative.description,
+    cta: creative.cta,
+    layout: creative.layout as SocialCreative["layout"],
+    overlayStyle: creative.overlayStyle as SocialCreative["overlayStyle"],
+    colorMood: creative.colorMood,
+    photographyStyle: creative.photographyStyle,
+    imageIntent: creative.imageIntent,
+    sceneElements: creative.sceneElements,
+    textStyle: {
+      fontWeight: (creative.textStyle?.fontWeight as "light" | "regular" | "bold") ?? "regular",
+      alignment: (creative.textStyle?.alignment as "left" | "center") ?? "center",
+      hierarchy:
+        (creative.textStyle?.hierarchy as "headline-dominant" | "balanced") ?? "balanced",
+    },
+  };
 }
 
 /** Thumbnail for Past Campaigns: any generated image in the campaign, else default imagery for the first slot. */
@@ -296,12 +317,8 @@ export const campaignRouter = createTRPCRouter({
       }
 
       const refundCampaign = () =>
-        grantCredits({
-          userId: ctx.session.user.id,
-          amount: costForAction("campaign", 1),
-          reason: "refund",
-          sourceId: `refund:campaign:${randomUUID()}`,
-          metadata: { reason: "generation_failed" },
+        refundForAction(ctx.session.user.id, "campaign", 1, {
+          reason: "generation_failed",
         });
 
       try {
@@ -462,72 +479,14 @@ export const campaignRouter = createTRPCRouter({
         });
       }
 
-      const savedCreatives = await Promise.all(
-        parsedCreatives.map((creative) =>
-          ctx.db.creative.create({
-            data: {
-              campaignId: campaignRecord.id,
-              headline: creative.headline,
-              description: creative.description,
-              cta: creative.cta,
-              layout: creative.layout,
-              overlayStyle: creative.overlayStyle,
-              colorMood: creative.colorMood,
-              photographyStyle: creative.photographyStyle,
-              imageIntent: creative.imageIntent,
-              sceneElements: creative.sceneElements,
-              layoutTemplate: creative.layoutTemplate ?? null,
-              fontWeight: creative.textStyle?.fontWeight ?? null,
-              textAlignment: creative.textStyle?.alignment ?? null,
-              textHierarchy: creative.textStyle?.hierarchy ?? null,
-            },
-          }),
-        ),
-      );
-
       const layer4Model = getModel("layer4");
       const layer4SystemPrompt = buildLayer4SystemPrompt(brandDNA);
 
-      const savedImagePrompts = await Promise.all(
-        savedCreatives.map(
-          async (
-            creative: {
-              id: string;
-              headline: string;
-              description: string;
-              cta: string;
-              layout: string;
-              overlayStyle: string;
-              colorMood: string;
-              photographyStyle: string;
-              imageIntent: string;
-              sceneElements: string[];
-              fontWeight: string | null;
-              textAlignment: string | null;
-              textHierarchy: string | null;
-            },
-            index: number,
-          ) => {
-          const creativeForPrompt: SocialCreative = {
-            headline: creative.headline,
-            description: creative.description,
-            cta: creative.cta,
-            layout: creative.layout as SocialCreative["layout"],
-            overlayStyle: creative.overlayStyle as SocialCreative["overlayStyle"],
-            colorMood: creative.colorMood,
-            photographyStyle: creative.photographyStyle,
-            imageIntent: creative.imageIntent,
-            sceneElements: creative.sceneElements,
-            textStyle: {
-              fontWeight: (creative.fontWeight as "light" | "regular" | "bold") ?? "regular",
-              alignment: (creative.textAlignment as "left" | "center") ?? "center",
-              hierarchy:
-                (creative.textHierarchy as "headline-dominant" | "balanced") ?? "balanced",
-            },
-          };
-
+      // Build image prompts in memory first — no DB writes until the full batch succeeds.
+      const imagePromptTexts = await Promise.all(
+        parsedCreatives.map(async (creative, index) => {
           const layer4UserPrompt = buildLayer4UserPrompt(
-            creativeForPrompt,
+            parsedCreativeToSocialCreative(creative),
             brandDNA,
             index,
             campaignData as CampaignStrategy,
@@ -539,28 +498,64 @@ export const campaignRouter = createTRPCRouter({
             { text: layer4UserPrompt },
           ]);
 
-          const promptText = layer4Response.response.text().trim();
+          return layer4Response.response.text().trim();
+        }),
+      );
 
-          const promptRecord = await ctx.db.imagePrompt.upsert({
-            where: { creativeId: creative.id },
-            create: {
-              creativeId: creative.id,
-              prompt: promptText,
-              aspectRatio: input.aspectRatio,
-            },
-            update: {
-              prompt: promptText,
-              aspectRatio: input.aspectRatio,
-            },
+      const { savedCreatives, savedImagePrompts } = await ctx.db.$transaction(
+        async (tx) => {
+          await tx.creative.deleteMany({
+            where: { campaignId: campaignRecord.id },
           });
 
-          return {
-            creativeIndex: index,
-            prompt: promptRecord.prompt,
-            aspectRatio: promptRecord.aspectRatio,
-          };
-          },
-        ),
+          const creatives: Awaited<ReturnType<typeof tx.creative.create>>[] = [];
+          const prompts: Array<{
+            creativeIndex: number;
+            prompt: string;
+            aspectRatio: string;
+          }> = [];
+
+          for (let index = 0; index < parsedCreatives.length; index++) {
+            const creative = parsedCreatives[index]!;
+            const promptText = imagePromptTexts[index]!;
+
+            const saved = await tx.creative.create({
+              data: {
+                campaignId: campaignRecord.id,
+                headline: creative.headline,
+                description: creative.description,
+                cta: creative.cta,
+                layout: creative.layout,
+                overlayStyle: creative.overlayStyle,
+                colorMood: creative.colorMood,
+                photographyStyle: creative.photographyStyle,
+                imageIntent: creative.imageIntent,
+                sceneElements: creative.sceneElements,
+                layoutTemplate: creative.layoutTemplate ?? null,
+                fontWeight: creative.textStyle?.fontWeight ?? null,
+                textAlignment: creative.textStyle?.alignment ?? null,
+                textHierarchy: creative.textStyle?.hierarchy ?? null,
+              },
+            });
+
+            const promptRecord = await tx.imagePrompt.create({
+              data: {
+                creativeId: saved.id,
+                prompt: promptText,
+                aspectRatio: input.aspectRatio,
+              },
+            });
+
+            creatives.push(saved);
+            prompts.push({
+              creativeIndex: index,
+              prompt: promptRecord.prompt,
+              aspectRatio: promptRecord.aspectRatio,
+            });
+          }
+
+          return { savedCreatives: creatives, savedImagePrompts: prompts };
+        },
       );
 
       return {

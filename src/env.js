@@ -25,6 +25,9 @@ export const env = createEnv({
     AUTH_GOOGLE_SECRET: z.string().optional(),
     DATABASE_URL: isProd ? z.string().url() : z.string().url().optional(),
     GEMINI_API_KEY: isProd ? z.string().min(1) : z.string().optional(),
+    // OpenRouter — used for image generation (openai/gpt-image-2 by default).
+    OPENROUTER_API_KEY: isProd ? z.string().min(1) : z.string().optional(),
+    OPENROUTER_IMAGE_MODEL: z.string().optional(),
     META_APP_ID: z.string().optional(),
     META_APP_SECRET: z.string().optional(),
     RAZORPAY_KEY_ID: z.string().optional(),
@@ -58,6 +61,8 @@ export const env = createEnv({
     AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+    OPENROUTER_IMAGE_MODEL: process.env.OPENROUTER_IMAGE_MODEL,
     META_APP_ID: process.env.META_APP_ID,
     META_APP_SECRET: process.env.META_APP_SECRET,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,

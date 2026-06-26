@@ -16,6 +16,12 @@ export const CREDIT_COSTS = {
   campaign: 30,
 } as const;
 
+/** Max images charged/generated per layer5 request (prevents abuse). */
+export const MAX_IMAGE_BATCH_SIZE = 10;
+
+/** Expected creatives per campaign launch (layer 3). */
+export const CREATIVES_PER_CAMPAIGN = 5;
+
 export type CreditAction = keyof typeof CREDIT_COSTS;
 
 /** Rough "images" equivalent for a credit amount — used for UI copy only. */

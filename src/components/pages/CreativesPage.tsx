@@ -29,6 +29,7 @@ import type { SocialCreative } from '@/types';
 import type { WebsiteData } from '@/types';
 import { getHeadlineTypography } from '@/lib/creativeTypography';
 import { api } from '~/trpc/react';
+import { CREDIT_COSTS } from '~/lib/pricing';
 
 // Dynamic Google Fonts loader
 function useBrandFont(fontName?: string) {
@@ -116,6 +117,27 @@ export function CreativesPage() {
   const [productInfographicUrl, setProductInfographicUrl] = useState('');
   const [infographicLoading, setInfographicLoading] = useState(false);
   const [infographicError, setInfographicError] = useState<string | null>(null);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadBilling = async () => {
+      try {
+        const res = await fetch('/api/billing/portal');
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!cancelled && typeof json?.data?.creditBalance === 'number') {
+          setCreditBalance(json.data.creditBalance);
+        }
+      } catch {
+        // optional
+      }
+    };
+    void loadBilling();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     fetch('/api/templates')
@@ -237,6 +259,14 @@ export function CreativesPage() {
       return;
     }
 
+    const requiredCredits = CREDIT_COSTS.image * prompts.length;
+    if (creditBalance !== null && creditBalance < requiredCredits) {
+      alert(
+        `Not enough credits. Generating ${prompts.length} image(s) costs ${requiredCredits} credits — your balance is ${creditBalance}. Top up in Pricing.`,
+      );
+      return;
+    }
+
     setIsGeneratingImages(true);
     setShowGenNotice(true);
     try {
@@ -258,8 +288,25 @@ export function CreativesPage() {
 
       const result = await response.json();
 
+      if (!response.ok) {
+        if (response.status === 402) {
+          alert(
+            result.error ??
+              `Not enough credits. Need ${result.required ?? requiredCredits} credits.`,
+          );
+        }
+        return;
+      }
+
       if (result.success && result.data?.generatedImages) {
         setGeneratedImages(result.data.generatedImages);
+        const billingRes = await fetch('/api/billing/portal');
+        if (billingRes.ok) {
+          const billingJson = await billingRes.json();
+          if (typeof billingJson?.data?.creditBalance === 'number') {
+            setCreditBalance(billingJson.data.creditBalance);
+          }
+        }
       }
       await trpcUtils.creative.getLatestProjectCreatives.invalidate({
         projectId: projectIdFromQuery,
