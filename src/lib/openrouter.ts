@@ -9,9 +9,16 @@ import { env } from '~/env';
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_IMAGE_MODEL = 'openai/gpt-image-2';
+// Text/JSON generation is routed through OpenRouter using a Gemini model slug,
+// so the underlying model stays the same while removing the direct Google dependency.
+const DEFAULT_TEXT_MODEL = 'google/gemini-2.5-flash';
 
 function getImageModel(): string {
   return process.env.OPENROUTER_IMAGE_MODEL || DEFAULT_IMAGE_MODEL;
+}
+
+function getTextModel(): string {
+  return process.env.OPENROUTER_TEXT_MODEL || DEFAULT_TEXT_MODEL;
 }
 
 function getOpenRouterKey(): string {
@@ -66,6 +73,7 @@ export interface ImageGenerationOptions {
 }
 
 interface OpenRouterInputReference {
+  type: 'image_url';
   image_url: { url: string };
 }
 
@@ -143,6 +151,7 @@ function toInputReference(ref: {
   mimeType: string;
 }): OpenRouterInputReference {
   return {
+    type: 'image_url',
     image_url: { url: `data:${ref.mimeType};base64,${ref.base64}` },
   };
 }
@@ -164,4 +173,78 @@ export async function generateImageWithReferences(
 ): Promise<string> {
   const inputReferences = referenceImages.map(toInputReference);
   return callOpenRouterImage(buildRequestBody(prompt, options, inputReferences));
+}
+
+// ─── Text / multimodal chat completions ─────────────────────
+
+/** A single content part: text, or an inline image (base64) for vision. */
+export type ChatPart =
+  | { text: string }
+  | { inlineData: { mimeType: string; data: string } };
+
+export interface ChatCompletionOptions {
+  temperature?: number;
+  maxOutputTokens?: number;
+}
+
+type OpenRouterChatContent =
+  | { type: 'text'; text: string }
+  | { type: 'image_url'; image_url: { url: string } };
+
+interface OpenRouterChatResponse {
+  choices?: Array<{ message?: { content?: string } }>;
+}
+
+function toChatContent(part: ChatPart): OpenRouterChatContent {
+  if ('text' in part) {
+    return { type: 'text', text: part.text };
+  }
+  return {
+    type: 'image_url',
+    image_url: {
+      url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
+    },
+  };
+}
+
+// Call OpenRouter chat completions with an array of content parts (text and/or
+// images). Returns the assistant message text. Used by the Gemini-compatible
+// shim in ~/lib/gemini so existing callers keep their interface.
+export async function callOpenRouterChat(
+  parts: ChatPart[],
+  options?: ChatCompletionOptions,
+): Promise<string> {
+  const apiKey = getOpenRouterKey();
+
+  const body: Record<string, unknown> = {
+    model: getTextModel(),
+    messages: [{ role: 'user', content: parts.map(toChatContent) }],
+  };
+  if (options?.temperature !== undefined) body.temperature = options.temperature;
+  if (options?.maxOutputTokens !== undefined) body.max_tokens = options.maxOutputTokens;
+
+  const res = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    let detail = '';
+    try {
+      const errJson = (await res.json()) as { error?: { message?: string } };
+      detail = errJson.error?.message ?? '';
+    } catch {
+      detail = await res.text().catch(() => '');
+    }
+    throw new Error(
+      `OpenRouter chat completion failed (${res.status} ${res.statusText})${detail ? `: ${detail}` : ''}`,
+    );
+  }
+
+  const json = (await res.json()) as OpenRouterChatResponse;
+  return json.choices?.[0]?.message?.content ?? '';
 }

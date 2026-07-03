@@ -90,11 +90,10 @@ const PRODUCT_INFOGRAPHIC_PREFIX = `PRODUCT INFOGRAPHIC — CONVERSION-FOCUSED:
 The reference image(s) are the REAL product. You MUST faithfully preserve its exact shape, label, packaging, logo, and color.
 
 VISUAL DIRECTION:
-- Create a stunning, full-bleed hero shot: the product must fill the frame, looking aspirational and desirable.
-- Use dramatic cinematic lighting: rim light, volumetric haze, catch-lights on surfaces, warm color grading.
-- Premium environment: reflective surfaces, subtle texture (marble, silk, water drops, botanical elements).
-- Infographic overlays must be SUBTLE and ELEGANT: thin hairline leader lines, small circular anchor dots, clean micro-icons, short 2-4 word labels in light sans-serif.
-- The result must look like a high-end DTC brand ad that makes viewers stop scrolling and want to buy.
+- Make the product the clear hero of the frame, looking appealing and true to the brand.
+- Use lighting and a setting that fit the brand's style — match the brief rather than defaulting to a luxury look.
+- Infographic overlays must be subtle and clean: thin leader lines, small anchor dots, simple micro-icons, short 2-4 word labels in a light sans-serif.
+- The result should be a scroll-stopping, purchase-driving ad.
 - Do NOT substitute a different product. Do NOT create flat or clinical-looking images.
 
 `;

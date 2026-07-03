@@ -11,60 +11,33 @@ function mapFontWeight(weight: SocialCreative['textStyle']['fontWeight'] | null 
     case 'light':
       return 300;
     case 'regular':
-      return 600;
+      return 500;
     case 'bold':
     default:
-      return 900;
+      return 700;
   }
 }
 
-function baseClampForLayout(layoutIndex: number): string {
-  switch (layoutIndex % 5) {
-    case 0:
-      return 'clamp(1.5rem, 5vw, 2rem)';
-    case 1:
-      return 'clamp(1.6rem, 6vw, 2.2rem)';
-    case 2:
-      return 'clamp(1.8rem, 7vw, 2.5rem)';
-    case 3:
-      return 'clamp(1rem, 3.5vw, 1.4rem)';
-    case 4:
-    default:
-      return 'clamp(1.3rem, 4vw, 1.8rem)';
-  }
-}
+// Base headline size. Kept intentionally small so the generated image stays the
+// hero and text never overwhelms the creative. Length/hierarchy tiers shrink it further.
+const BASE_CLAMP = 'clamp(0.9rem, 3vw, 1.25rem)';
 
 function shrinkClamp(base: string, tier: 0 | 1 | 2): string {
   if (tier === 0) return base;
   if (tier === 1) {
     return base
-      .replace('1.8rem', '1.55rem')
-      .replace('1.6rem', '1.45rem')
-      .replace('1.5rem', '1.35rem')
-      .replace('1.3rem', '1.2rem')
-      .replace('1rem', '0.92rem')
-      .replace('2.5rem', '2.15rem')
-      .replace('2.2rem', '1.95rem')
-      .replace('2rem', '1.8rem')
-      .replace('1.8rem', '1.65rem')
-      .replace('1.4rem', '1.25rem');
+      .replace('0.9rem', '0.8rem')
+      .replace('3vw', '2.6vw')
+      .replace('1.25rem', '1.05rem');
   }
   return base
-    .replace('1.8rem', '1.35rem')
-    .replace('1.6rem', '1.3rem')
-    .replace('1.5rem', '1.2rem')
-    .replace('1.3rem', '1.05rem')
-    .replace('1rem', '0.85rem')
-    .replace('2.5rem', '1.8rem')
-    .replace('2.2rem', '1.7rem')
-    .replace('2rem', '1.6rem')
-    .replace('1.8rem', '1.45rem')
-    .replace('1.4rem', '1.1rem');
+    .replace('0.9rem', '0.72rem')
+    .replace('3vw', '2.3vw')
+    .replace('1.25rem', '0.92rem');
 }
 
 export function getHeadlineTypography(
   creative: SocialCreative,
-  layoutIndex: number,
 ): HeadlineTypography {
   const rawHeadline = creative.headline ?? '';
   const plain = rawHeadline.trim();
@@ -77,11 +50,9 @@ export function getHeadlineTypography(
   const hierarchyTier: 0 | 1 = hierarchy === 'headline-dominant' ? 0 : 1;
   const finalTier: 0 | 1 | 2 = Math.min(2, tier + hierarchyTier) as 0 | 1 | 2;
 
-  const baseClamp = baseClampForLayout(layoutIndex);
   return {
     fontWeight: mapFontWeight(creative.textStyle?.fontWeight),
-    fontSize: shrinkClamp(baseClamp, finalTier),
+    fontSize: shrinkClamp(BASE_CLAMP, finalTier),
     textAlign: creative.textStyle?.alignment === 'left' ? 'left' : 'center',
   };
 }
-

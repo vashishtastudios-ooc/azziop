@@ -22,7 +22,7 @@ import {
 import { toPng } from 'html-to-image';
 import { usePipelineStore } from '@/store/pipeline';
 import type { BrandDNA, CampaignStrategy, GeneratedImage, ImagePrompt, SocialCreative, WebsiteData } from '@/types';
-import { getHeadlineTypography } from '@/lib/creativeTypography';
+import { CreativeCard } from '@/components/creatives/CreativeCard';
 import { api } from '~/trpc/react';
 
 // Which element is being edited
@@ -37,16 +37,6 @@ type VisibilityState = {
 
 /** Which image layer is shown in the editor when both website and AI versions exist */
 type CreativeImageVersion = 'website' | 'ai';
-
-// Contrast-aware text color
-function getContrastColor(hex: string): string {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.substring(0, 2), 16);
-  const g = parseInt(h.substring(2, 4), 16);
-  const b = parseInt(h.substring(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
-}
 
 function imageAspectRatioCss(ar: ImagePrompt['aspectRatio'] | string | undefined): string {
   switch (ar) {
@@ -643,10 +633,10 @@ export function EditorPage() {
 
   // ─── RENDER CREATIVE PREVIEW (matches CreativesPage layouts) ───
   const renderCreativePreview = () => {
-    const layoutIndex = editingIndex % 5;
-    const headlineTypography = getHeadlineTypography(creative, layoutIndex);
+    const isLightOverlay =
+      creative.overlayStyle === 'gradient-light' || creative.overlayStyle === 'solid-light';
 
-    // Edit button overlay for an element
+    // Edit button overlay for an element (light variant for dark/image backgrounds)
     const EditButton = ({ element, position }: { element: EditingElement; position: string }) => (
       <button
         onClick={(e) => { e.stopPropagation(); startEditing(element); }}
@@ -656,7 +646,7 @@ export function EditorPage() {
       </button>
     );
 
-    // Edit button variant for dark backgrounds (used in white card layout)
+    // Edit button variant for light backgrounds
     const EditButtonDark = ({ element, position }: { element: EditingElement; position: string }) => (
       <button
         onClick={(e) => { e.stopPropagation(); startEditing(element); }}
@@ -666,297 +656,27 @@ export function EditorPage() {
       </button>
     );
 
-    /** Same layout as CreativesPage product-infographic grid — not the 5 rotating templates. */
-    if (creative.layoutTemplate === 'product-infographic') {
-      return (
-        <div className="group relative w-full h-full overflow-hidden rounded-2xl bg-[#050505]">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover cursor-pointer"
-              onClick={openImageModal}
-            />
+    return (
+      <CreativeCard
+        creative={creative}
+        imageUrl={imageUrl}
+        headingFontFamily={headingFontFamily}
+        bodyFontFamily={bodyFontFamily}
+        primary={primary}
+        showHeadline={showHeadline}
+        showDescription={showDescription}
+        showCta={showCta}
+        onImageClick={openImageModal}
+        rounded
+        renderEditButton={(element) =>
+          isLightOverlay ? (
+            <EditButtonDark element={element} position="-top-2 -right-2" />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-surface-800">
-              <ImageIcon className="w-12 h-12 text-surface-600" />
-            </div>
-          )}
-
-          <div
-            className="absolute inset-x-0 top-0 pointer-events-none"
-            style={{
-              height: '40%',
-              background:
-                'linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.28) 60%, transparent 100%)',
-            }}
-          />
-          <div className="absolute top-0 inset-x-0 p-3 sm:p-4 z-10">
-            <div className="relative">
-              <EditButton element="headline" position="-top-2 -right-2" />
-              {showHeadline && (
-                <h3
-                  className="text-white font-bold text-sm sm:text-[0.95rem] leading-tight line-clamp-2 drop-shadow-md"
-                  style={{ fontFamily: headingFontFamily }}
-                >
-                  {creative.headline}
-                </h3>
-              )}
-            </div>
-            <div className="relative mt-1">
-              <EditButton element="description" position="-top-2 -right-2" />
-              {showDescription && creative.description && (
-                <p
-                  className="text-white/75 text-[10px] sm:text-[11px] leading-snug line-clamp-2 max-w-[95%] drop-shadow-sm"
-                  style={{ fontFamily: bodyFontFamily }}
-                >
-                  {creative.description}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div
-            className="absolute inset-x-0 bottom-0 pointer-events-none"
-            style={{
-              height: '28%',
-              background:
-                'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.18) 65%, transparent 100%)',
-            }}
-          />
-          {creative.cta && showCta && (
-            <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4 z-10 flex justify-center">
-              <div className="relative">
-                <EditButton element="cta" position="-top-2 -right-2" />
-                <span
-                  className="inline-flex items-center px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full backdrop-blur-sm shadow-lg"
-                  style={{
-                    color: '#fff',
-                    background: 'rgba(255,255,255,0.12)',
-                    border: '1px solid rgba(255,255,255,0.25)',
-                  }}
-                >
-                  {creative.cta}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    switch (layoutIndex) {
-      // LAYOUT 1: Full-bleed + bottom-left text
-      case 0:
-        return (
-          <div className="group relative w-full h-full overflow-hidden rounded-2xl" style={{ backgroundColor: '#111' }}>
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover cursor-pointer"
-                style={{ filter: 'brightness(0.85)' }}
-                onClick={openImageModal}
-              />
-            )}
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.25) 40%, transparent 70%)' }} />
-            <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-              <div className="relative">
-                <EditButton element="headline" position="-top-2 -right-2" />
-                {showHeadline && (
-                  <h3 className="text-white leading-[0.95] mb-3 uppercase tracking-tight" style={{ fontFamily: headingFontFamily, fontWeight: headlineTypography.fontWeight, fontSize: headlineTypography.fontSize, textAlign: headlineTypography.textAlign, marginTop: '2px' }}>
-                    {creative.headline}
-                  </h3>
-                )}
-              </div>
-              <div className="relative">
-                <EditButton element="description" position="-top-2 -right-2" />
-                {showDescription && (
-                  <p className="text-white/75 text-sm leading-relaxed mb-3 max-w-[85%]" style={{ fontFamily: bodyFontFamily }}>
-                    {creative.description}
-                  </p>
-                )}
-              </div>
-              {creative.cta && showCta && (
-                <div className="relative inline-block">
-                  <EditButton element="cta" position="-top-2 -right-6" />
-                  <span className="inline-block px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest rounded-full border border-white/40 text-white">
-                    {creative.cta}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      // LAYOUT 2: Dark centered
-      case 1:
-        return (
-          <div className="group relative w-full h-full overflow-hidden rounded-2xl" style={{ backgroundColor: '#0a0a0a' }}>
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover cursor-pointer"
-                style={{ filter: 'brightness(0.7) contrast(1.1)', opacity: 0.75 }}
-                onClick={openImageModal}
-              />
-            )}
-            <div className="absolute inset-0 bg-black/25" />
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 z-10 text-center">
-              <div className="relative">
-                <EditButton element="headline" position="-top-2 -right-2" />
-                {showHeadline && (
-                  <h3 className="text-white leading-[0.9] mb-4 uppercase tracking-tight" style={{ fontFamily: headingFontFamily, fontWeight: headlineTypography.fontWeight, fontSize: headlineTypography.fontSize, textAlign: headlineTypography.textAlign, marginTop: '2px' }}>
-                    {creative.headline}
-                  </h3>
-                )}
-              </div>
-              <div className="relative">
-                <EditButton element="description" position="-top-2 -right-2" />
-                {showDescription && (
-                  <p className="text-white/70 text-sm leading-relaxed mb-4 max-w-[90%]" style={{ fontFamily: bodyFontFamily }}>
-                    {creative.description}
-                  </p>
-                )}
-              </div>
-              {creative.cta && showCta && (
-                <div className="relative inline-block">
-                  <EditButton element="cta" position="-top-2 -right-6" />
-                  <span className="inline-block px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest rounded-full text-white" style={{ backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)' }}>
-                    {creative.cta}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      // LAYOUT 3: Giant headline overlap
-      case 2:
-        return (
-          <div className="group relative w-full h-full overflow-hidden rounded-2xl" style={{ backgroundColor: '#111' }}>
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover cursor-pointer"
-                style={{ filter: 'brightness(0.8)' }}
-                onClick={openImageModal}
-              />
-            )}
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.35) 50%, transparent 80%)' }} />
-            <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-              <div className="relative">
-                <EditButton element="headline" position="-top-2 -right-2" />
-                {showHeadline && (
-                  <h3 className="text-white leading-[0.85] mb-3 uppercase tracking-tight" style={{ fontFamily: headingFontFamily, fontWeight: headlineTypography.fontWeight, fontSize: headlineTypography.fontSize, textAlign: headlineTypography.textAlign, marginTop: '2px' }}>
-                    {creative.headline}
-                  </h3>
-                )}
-              </div>
-              <div className="relative">
-                <EditButton element="description" position="-top-2 -right-2" />
-                {showDescription && (
-                  <p className="text-white/65 text-[12px] leading-relaxed mb-1" style={{ fontFamily: bodyFontFamily }}>
-                    {creative.description}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-
-      // LAYOUT 4: Brand accent panel
-      case 3:
-        return (
-          <div className="group relative w-full h-full overflow-hidden rounded-2xl" style={{ backgroundColor: '#111' }}>
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover cursor-pointer"
-                style={{ filter: 'brightness(0.8)' }}
-                onClick={openImageModal}
-              />
-            )}
-            <div className="absolute inset-0 bg-black/15" />
-            <div className="absolute top-0 right-0 w-[45%] h-full z-10" style={{ backgroundColor: primary, clipPath: 'polygon(25% 0, 100% 0, 100% 100%, 0% 100%)', opacity: 0.92 }} />
-            <div className="absolute top-0 right-0 w-[42%] h-full flex flex-col justify-center p-5 z-20">
-              <div className="relative">
-                <EditButton element="headline" position="-top-2 -right-2" />
-                {showHeadline && (
-                  <h3 className="leading-[0.9] mb-3 uppercase tracking-tight" style={{ fontFamily: headingFontFamily, fontWeight: headlineTypography.fontWeight, fontSize: headlineTypography.fontSize, textAlign: headlineTypography.textAlign, color: getContrastColor(primary), marginTop: '2px' }}>
-                    {creative.headline}
-                  </h3>
-                )}
-              </div>
-              <div className="relative">
-                <EditButton element="description" position="-top-2 -right-2" />
-                {showDescription && (
-                  <p className="text-[11px] leading-relaxed mb-3 uppercase tracking-wide" style={{ fontFamily: bodyFontFamily, color: getContrastColor(primary), opacity: 0.8 }}>
-                    {creative.description}
-                  </p>
-                )}
-              </div>
-              {creative.cta && showCta && (
-                <div className="relative inline-block">
-                  <EditButton element="cta" position="-top-2 -right-6" />
-                  <span className="inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-sm w-fit" style={{ backgroundColor: getContrastColor(primary), color: primary }}>
-                    {creative.cta}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      // LAYOUT 5: Clean white card — angled image top, dark text bottom
-      case 4:
-      default:
-        return (
-          <div className="group relative w-full h-full overflow-hidden rounded-2xl flex flex-col" style={{ backgroundColor: '#f8f8f8' }}>
-            {/* Image top section with angle clip */}
-            <div
-              className="relative w-full flex-shrink-0 overflow-hidden"
-              style={{ height: '55%', clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0% 100%)' }}
-            >
-              {imageUrl ? (
-                <img src={imageUrl} alt="" className="w-full h-full object-cover cursor-pointer" onClick={openImageModal} />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-surface-300 to-surface-400 flex items-center justify-center">
-                  <ImageIcon className="w-10 h-10 text-surface-500" />
-                </div>
-              )}
-            </div>
-            {/* Text content — white bg, dark text */}
-            <div className="flex-1 flex flex-col justify-center px-6 pb-6 pt-2">
-              <div className="relative">
-                <EditButtonDark element="headline" position="-top-2 -right-2" />
-                {showHeadline && (
-                  <h3
-                    className="leading-[1] mb-3 tracking-tight"
-                    style={{ fontFamily: headingFontFamily, fontWeight: headlineTypography.fontWeight, fontSize: headlineTypography.fontSize, textAlign: headlineTypography.textAlign, color: '#1a1a1a', marginTop: '2px' }}
-                  >
-                    {creative.headline}
-                  </h3>
-                )}
-              </div>
-              <div className="relative">
-                <EditButtonDark element="description" position="-top-2 -right-2" />
-                {showDescription && (
-                  <p
-                    className="text-sm leading-relaxed"
-                    style={{ fontFamily: bodyFontFamily, color: '#555' }}
-                  >
-                    {creative.description}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-    }
+            <EditButton element={element} position="-top-2 -right-2" />
+          )
+        }
+      />
+    );
   };
 
   const previewAspectCss = imageAspectRatioCss(

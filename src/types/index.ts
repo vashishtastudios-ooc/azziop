@@ -199,28 +199,6 @@ export interface WebsiteData {
   contactEmail?: string | null;
 }
 
-// Layout templates for creatives
-export type CreativeLayoutTemplate =
-  | 'collage-4'      // 4-image collage grid
-  | 'split-left'     // Image left, text right
-  | 'split-right'    // Text left, image right
-  | 'full-bleed'     // Single image with text overlay
-  | 'product-hero'   // Product image with lifestyle background
-  | 'minimal'        // Minimal design with lots of whitespace
-  | 'bold-text'      // Large typography focused
-  | 'gradient-card'; // Gradient background with product
-
-export const LAYOUT_TEMPLATES: CreativeLayoutTemplate[] = [
-  'collage-4',
-  'split-left',
-  'split-right',
-  'full-bleed',
-  'product-hero',
-  'minimal',
-  'bold-text',
-  'gradient-card',
-];
-
 export interface PipelineState {
   status: 'idle' | 'scraping' | 'extracting' | 'analyzing' | 'strategizing' | 'architecting' | 'prompting' | 'generating' | 'complete' | 'error';
   currentLayer: number;

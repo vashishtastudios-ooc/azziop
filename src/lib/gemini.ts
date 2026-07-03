@@ -1,23 +1,12 @@
 // ============================================
-// Gemini API Client
-// Handles all interactions with Google's Gemini models
+// Gemini-compatible text generation
+// Routes Gemini model calls through OpenRouter (~/lib/openrouter) so the
+// underlying model stays Gemini while removing the direct Google API key.
+// The returned shim preserves the `model.generateContent(parts)` /
+// `response.response.text()` interface used across the app.
 // ============================================
 
-import {
-  GoogleGenerativeAI,
-  GenerativeModel,
-  type ResponseSchema,
-} from '@google/generative-ai';
-import { env } from '~/env';
-
-// Initialize the Gemini client
-const getGeminiClient = () => {
-  const apiKey = env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY environment variable is required');
-  }
-  return new GoogleGenerativeAI(apiKey);
-};
+import { callOpenRouterChat, type ChatPart } from '~/lib/openrouter';
 
 // Model configurations for each layer
 // See: https://ai.google.dev/gemini-api/docs/models
@@ -55,46 +44,41 @@ export const MODEL_CONFIGS = {
   },
 };
 
-/** Optional overrides for structured output (Gemini JSON mode). */
+/**
+ * Optional overrides kept for backwards compatibility with callers that passed
+ * a Gemini response schema. Structured output is no longer enforced at the API
+ * level (callers extract/parse JSON from the text), so these are accepted but
+ * not forwarded.
+ */
 export interface GetModelOptions {
-  /** When set, Gemini returns schema-validated JSON — no markdown/regex parsing needed. */
-  responseSchema?: ResponseSchema;
+  responseSchema?: unknown;
   responseMimeType?: 'application/json' | 'text/plain';
 }
 
-// Get a configured model for a specific layer
+/** Minimal Gemini-compatible model surface backed by OpenRouter. */
+export interface GeminiCompatibleModel {
+  generateContent: (
+    parts: ChatPart[],
+  ) => Promise<{ response: { text: () => string } }>;
+}
+
+// Get a configured model for a specific layer.
 export const getModel = (
   layer: keyof typeof MODEL_CONFIGS,
-  options?: GetModelOptions,
-): GenerativeModel => {
-  const client = getGeminiClient();
+  _options?: GetModelOptions,
+): GeminiCompatibleModel => {
   const config = MODEL_CONFIGS[layer];
-
   const hasTuning = 'temperature' in config;
-  const generationConfig =
-    hasTuning || options?.responseSchema || options?.responseMimeType
-      ? {
-          ...(hasTuning
-            ? {
-                temperature: config.temperature,
-                maxOutputTokens: config.maxOutputTokens,
-              }
-            : {}),
-          ...(options?.responseMimeType
-            ? { responseMimeType: options.responseMimeType }
-            : options?.responseSchema
-              ? { responseMimeType: 'application/json' as const }
-              : {}),
-          ...(options?.responseSchema
-            ? { responseSchema: options.responseSchema }
-            : {}),
-        }
-      : undefined;
 
-  return client.getGenerativeModel({
-    model: config.model,
-    generationConfig,
-  });
+  return {
+    generateContent: async (parts: ChatPart[]) => {
+      const text = await callOpenRouterChat(parts, {
+        temperature: hasTuning ? config.temperature : undefined,
+        maxOutputTokens: hasTuning ? config.maxOutputTokens : undefined,
+      });
+      return { response: { text: () => text } };
+    },
+  };
 };
 
 // Generic function to call Gemini with a prompt

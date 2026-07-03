@@ -32,8 +32,6 @@ interface ExtendedPipelineState extends PipelineState {
   aboutSection: string | null;
   heroText: string | null;
 
-  // Layout templates for each creative (index -> template)
-  creativeLayouts: Record<number, CreativeLayoutTemplate>;
   userPlan: PlanId;
 }
 
@@ -59,10 +57,6 @@ interface PipelineStore extends ExtendedPipelineState {
   updateWebsiteExtras: (field: string, value: string | string[]) => void;
   setUserPlan: (plan: PlanId) => void;
 
-  // Layout management
-  setCreativeLayout: (index: number, layout: CreativeLayoutTemplate) => void;
-  cycleCreativeLayout: (index: number) => void;
-
   // Step 1: Extract Brand DNA only (preserveBrandPage: keep DNA on screen while re-running Layer 1)
   runPipeline: (url: string, options?: { preserveBrandPage?: boolean }) => Promise<void>;
 
@@ -72,18 +66,6 @@ interface PipelineStore extends ExtendedPipelineState {
   // Regenerate campaigns with optional user prompt
   regenerateCampaigns: (userPrompt?: string, previousContext?: { titles: string[]; hooks: string[]; angles: string[] }) => Promise<void>;
 }
-
-// Layout templates array
-const LAYOUT_TEMPLATES_LIST: CreativeLayoutTemplate[] = [
-  'collage-4',
-  'split-left',
-  'split-right',
-  'full-bleed',
-  'product-hero',
-  'minimal',
-  'bold-text',
-  'gradient-card',
-];
 
 const initialState: ExtendedPipelineState = {
   status: 'idle',
@@ -105,7 +87,6 @@ const initialState: ExtendedPipelineState = {
   tagline: null,
   aboutSection: null,
   heroText: null,
-  creativeLayouts: {},
   userPlan: 'free',
 };
 
@@ -181,20 +162,6 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
 
   setUserPlan: (userPlan) => set({ userPlan }),
 
-  setCreativeLayout: (index, layout) => set((state) => ({
-    creativeLayouts: { ...state.creativeLayouts, [index]: layout },
-  })),
-
-  cycleCreativeLayout: (index) => set((state) => {
-    const currentLayout = state.creativeLayouts[index] || 'full-bleed';
-    const currentIndex = LAYOUT_TEMPLATES_LIST.indexOf(currentLayout);
-    const nextIndex = (currentIndex + 1) % LAYOUT_TEMPLATES_LIST.length;
-    const nextLayout = LAYOUT_TEMPLATES_LIST[nextIndex];
-    return {
-      creativeLayouts: { ...state.creativeLayouts, [index]: nextLayout },
-    };
-  }),
-
   runPipeline: async (url: string, options?: { preserveBrandPage?: boolean }) => {
     const {
       setStatus,
@@ -214,7 +181,6 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
         creatives: [],
         imagePrompts: [],
         generatedImages: [],
-        creativeLayouts: {},
         error: null,
       }));
     } else {
@@ -409,17 +375,6 @@ export const usePipelineStore = create<PipelineStore>((set, get) => ({
     }
   },
 }));
-
-// Type for creative layout template
-type CreativeLayoutTemplate =
-  | 'collage-4'
-  | 'split-left'
-  | 'split-right'
-  | 'full-bleed'
-  | 'product-hero'
-  | 'minimal'
-  | 'bold-text'
-  | 'gradient-card';
 
 // Selector hooks
 export const useIsLoading = () =>

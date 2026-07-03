@@ -24,10 +24,14 @@ export const env = createEnv({
     AUTH_GOOGLE_ID: z.string().optional(),
     AUTH_GOOGLE_SECRET: z.string().optional(),
     DATABASE_URL: isProd ? z.string().url() : z.string().url().optional(),
-    GEMINI_API_KEY: isProd ? z.string().min(1) : z.string().optional(),
-    // OpenRouter — used for image generation (openai/gpt-image-2 by default).
+    // Legacy — text/image generation now routes through OpenRouter. Kept optional
+    // so existing envs don't break; no longer used by the app.
+    GEMINI_API_KEY: z.string().optional(),
+    // OpenRouter — powers both image generation (openai/gpt-image-2) and text
+    // generation (google/gemini-2.5-flash) by default.
     OPENROUTER_API_KEY: isProd ? z.string().min(1) : z.string().optional(),
     OPENROUTER_IMAGE_MODEL: z.string().optional(),
+    OPENROUTER_TEXT_MODEL: z.string().optional(),
     META_APP_ID: z.string().optional(),
     META_APP_SECRET: z.string().optional(),
     RAZORPAY_KEY_ID: z.string().optional(),
@@ -63,6 +67,7 @@ export const env = createEnv({
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
     OPENROUTER_IMAGE_MODEL: process.env.OPENROUTER_IMAGE_MODEL,
+    OPENROUTER_TEXT_MODEL: process.env.OPENROUTER_TEXT_MODEL,
     META_APP_ID: process.env.META_APP_ID,
     META_APP_SECRET: process.env.META_APP_SECRET,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
