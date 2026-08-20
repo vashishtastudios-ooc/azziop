@@ -11,6 +11,7 @@ import {
   buildProductInfographicUserPrompt,
 } from '~/lib/prompts/product-infographic';
 import type { BrandDNA, ImagePrompt, SocialCreative } from '~/types';
+import { getFeatureFlags } from '~/lib/featureFlags';
 
 /** Marks creatives that use full-bleed infographic grid (not the 5 rotating Pomelli layouts). */
 const PRODUCT_INFOGRAPHIC_LAYOUT_TEMPLATE = 'product-infographic';
@@ -79,6 +80,14 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const flags = await getFeatureFlags();
+    if (!flags.productInfographic) {
+      return NextResponse.json(
+        { error: 'Product Infographic is temporarily disabled.' },
+        { status: 503 },
+      );
     }
 
     const body = await req.json();

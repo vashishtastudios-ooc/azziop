@@ -17,6 +17,7 @@ import {
   CalendarClock,
   CreditCard,
   Coins,
+  Shield,
 } from 'lucide-react';
 import { usePipelineStore } from '@/store/pipeline';
 import type { WebsiteData } from '@/types';
@@ -69,6 +70,11 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });
+  const { data: productConfig } = api.user.productConfig.useQuery(undefined, {
+    enabled: status === 'authenticated',
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
 
   const projectId = searchParams.get('projectId');
   const storeProjectId = usePipelineStore((s) => s.projectId);
@@ -97,18 +103,26 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
   }, [projectId, storeProjectId, storeWebsiteData, projectDetails]);
 
   const items: NavItem[] = useMemo(
-    () => [
-      { label: 'Projects', href: '/projects', icon: FolderOpen },
-      { label: 'Brand DNA', href: projectId ? `/brand-dna?projectId=${projectId}` : '/brand-dna', icon: Dna },
-      { label: 'Campaigns', href: projectId ? `/campaigns?projectId=${projectId}` : '/campaigns', icon: Target },
-      {
-        label: 'Schedule',
-        href: projectId ? `/schedule?projectId=${projectId}` : '/schedule',
-        icon: CalendarClock,
-      },
-      { label: 'Pricing', href: '/pricing', icon: CreditCard },
-    ],
-    [projectId],
+    () => {
+      const base: NavItem[] = [
+        { label: 'Projects', href: '/projects', icon: FolderOpen },
+        { label: 'Brand DNA', href: projectId ? `/brand-dna?projectId=${projectId}` : '/brand-dna', icon: Dna },
+        { label: 'Campaigns', href: projectId ? `/campaigns?projectId=${projectId}` : '/campaigns', icon: Target },
+      ];
+      if (productConfig?.flags.scheduling !== false) {
+        base.push({
+          label: 'Schedule',
+          href: projectId ? `/schedule?projectId=${projectId}` : '/schedule',
+          icon: CalendarClock,
+        });
+      }
+      base.push({ label: 'Pricing', href: '/pricing', icon: CreditCard });
+      if (profile?.isAdmin) {
+        base.push({ label: 'Admin', href: '/admin', icon: Shield });
+      }
+      return base;
+    },
+    [projectId, profile?.isAdmin, productConfig?.flags.scheduling],
   );
 
   useEffect(() => {
@@ -276,6 +290,17 @@ export function AuthenticatedShell({ children }: { children: ReactNode }) {
                       <CreditCard className="w-4 h-4" />
                       Pricing & Billing
                     </Link>
+
+                    {profile?.isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors border-b border-neutral-100"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Admin
+                      </Link>
+                    )}
 
                     <button
                       type="button"

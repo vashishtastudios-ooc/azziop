@@ -21,6 +21,7 @@ import type {
 } from "../../../types";
 
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { getActivePromptBody } from "~/lib/promptRuntime";
 import { spendForAction, refundForAction, costForAction } from "~/lib/credits";
 import {
   buildBusinessOverview,
@@ -309,7 +310,7 @@ export const campaignRouter = createTRPCRouter({
       if (!reserve.ok) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: `Not enough credits. Generating campaigns costs ${costForAction(
+          message: `Not enough credits. Generating campaigns costs ${await costForAction(
             "campaign",
             1,
           )} credits — your balance is ${reserve.balance}. Top up or upgrade in Pricing.`,
@@ -446,7 +447,10 @@ export const campaignRouter = createTRPCRouter({
       const brandDNA = project.brandDNA as BrandDNA;
 
       const layer3Model = getModel("layer3");
-      const layer3SystemPrompt = buildLayer3SystemPrompt(brandDNA);
+      const layer3SystemPrompt = buildLayer3SystemPrompt(
+        brandDNA,
+        await getActivePromptBody("layer3"),
+      );
       const layer3UserPrompt = buildLayer3UserPrompt(
         campaignData as CampaignStrategy,
         brandDNA,
@@ -480,7 +484,10 @@ export const campaignRouter = createTRPCRouter({
       }
 
       const layer4Model = getModel("layer4");
-      const layer4SystemPrompt = buildLayer4SystemPrompt(brandDNA);
+      const layer4SystemPrompt = buildLayer4SystemPrompt(
+        brandDNA,
+        await getActivePromptBody("layer4"),
+      );
 
       // Build image prompts in memory first — no DB writes until the full batch succeeds.
       const imagePromptTexts = await Promise.all(

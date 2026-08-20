@@ -427,6 +427,10 @@ export function CampaignsPage() {
 
   const generateCampaignsMutation = api.campaign.generate.useMutation();
   const generateCreativesMutation = api.campaign.generateCreatives.useMutation();
+  const { data: productConfig } = api.user.productConfig.useQuery(undefined, {
+    staleTime: 30_000,
+  });
+  const campaignCreditCost = productConfig?.costs.campaign ?? CREDIT_COSTS.campaign;
 
   const resolvedBrandDNA =
     brandDNA ?? (projectCampaignData?.brandDNA as BrandDNA | null) ?? null;
@@ -486,10 +490,10 @@ export function CampaignsPage() {
 
     if (
       billingInfo &&
-      billingInfo.creditBalance < CREDIT_COSTS.campaign
+      billingInfo.creditBalance < campaignCreditCost
     ) {
       setUpgradeReason(
-        `Not enough credits. Generating campaigns costs ${CREDIT_COSTS.campaign} credits — your balance is ${billingInfo.creditBalance}.`,
+        `Not enough credits. Generating campaigns costs ${campaignCreditCost} credits — your balance is ${billingInfo.creditBalance}.`,
       );
       setShowUpgradeModal(true);
       return;

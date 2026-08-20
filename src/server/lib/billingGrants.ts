@@ -1,10 +1,7 @@
 import { db } from "~/server/db";
 import { grantCredits } from "~/lib/credits";
-import {
-  monthlyCreditsForPlan,
-  type PlanId,
-  type BillingInterval,
-} from "~/lib/pricing";
+import { type PlanId, type BillingInterval } from "~/lib/pricing";
+import { getMonthlyCreditsForPlan } from "~/lib/billingRuntime";
 
 /**
  * Shared billing side-effects. Both the redirect-time verify route and the
@@ -55,7 +52,7 @@ export async function activatePlanAndGrant(input: ActivateInput): Promise<void> 
 
   await grantCredits({
     userId,
-    amount: monthlyCreditsForPlan(planId),
+    amount: await getMonthlyCreditsForPlan(planId),
     reason: "plan_grant",
     sourceId: grantKey,
     metadata: { planId, interval, subscriptionId, paymentId },

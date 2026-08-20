@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { publishDueInstagramPosts } from '~/server/lib/publishDueInstagramPosts';
 import { publishInstagramImage, publishFacebookPost } from '~/server/lib/instagramMeta';
+import { getFeatureFlags } from '~/lib/featureFlags';
 
 const platformSchema = z.enum(['instagram', 'facebook']);
 
@@ -156,6 +157,14 @@ export const schedulerRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const flags = await getFeatureFlags();
+      if (!flags.scheduling) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Scheduling is temporarily disabled.',
+        });
+      }
+
       const creative = await ctx.db.creative.findFirst({
         where: {
           id: input.creativeId,

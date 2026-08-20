@@ -7,15 +7,15 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { name, mobile, email, password } = body as {
             name: string;
-            mobile: string;
-            email?: string;
+            mobile?: string;
+            email: string;
             password: string;
         };
 
         // Validate required fields
-        if (!name?.trim() || !mobile?.trim() || !password?.trim()) {
+        if (!name?.trim() || !email?.trim() || !password?.trim()) {
             return NextResponse.json(
-                { error: "Name, mobile, and password are required" },
+                { error: "Name, email, and password are required" },
                 { status: 400 }
             );
         }
@@ -27,21 +27,22 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Check if mobile already exists
+        const normalizedEmail = email.trim().toLowerCase();
+        const normalizedMobile = mobile?.trim() || null;
+
+        // Check if email (or mobile) already exists
         const existingUser = await db.user.findFirst({
             where: {
                 OR: [
-                    { mobile: mobile.trim() },
-                    ...(email?.trim()
-                        ? [{ email: email.trim().toLowerCase() }]
-                        : []),
+                    { email: normalizedEmail },
+                    ...(normalizedMobile ? [{ mobile: normalizedMobile }] : []),
                 ],
             },
         });
 
         if (existingUser) {
             return NextResponse.json(
-                { error: "An account with this mobile number or email already exists" },
+                { error: "An account with this email or mobile number already exists" },
                 { status: 409 }
             );
         }
@@ -51,8 +52,8 @@ export async function POST(req: NextRequest) {
         const user = await db.user.create({
             data: {
                 name: name.trim(),
-                mobile: mobile.trim(),
-                email: email?.trim().toLowerCase() || null,
+                mobile: normalizedMobile,
+                email: normalizedEmail,
                 passwordHash,
             },
         });

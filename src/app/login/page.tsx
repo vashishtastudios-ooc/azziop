@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { signIn, useSession } from 'next-auth/react'
 import { motion } from 'framer-motion'
@@ -10,9 +11,9 @@ import {
   AuthFormLink,
   AuthPageLayout,
 } from '~/components/marketing/AuthPageLayout'
-import { MKT_BTN_PRIMARY, MKT_BTN_SECONDARY } from '~/lib/marketingTheme'
+import { MKT_BTN_PRIMARY } from '~/lib/marketingTheme'
 import {
-  Phone,
+  Mail,
   Lock,
   Eye,
   EyeOff,
@@ -21,7 +22,6 @@ import {
   Zap,
   Layers,
   Target,
-  Sparkles,
 } from 'lucide-react'
 
 const AUTH_FEATURES = [
@@ -34,7 +34,7 @@ const inputWithIcon =
   'app-input pl-12 focus:ring-0'
 
 export default function LoginPage() {
-  const [mobile, setMobile] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
@@ -55,7 +55,7 @@ export default function LoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        mobile: mobile.trim(),
+        email: email.trim(),
         password,
         redirect: false,
       })
@@ -63,7 +63,7 @@ export default function LoginPage() {
       if (result?.error) {
         if (result.error === 'CredentialsSignin') {
           setError(
-            'Invalid mobile number or password. If you signed up with Google, use Continue with Google.',
+            'Invalid email or password. If you signed up with Google, use Continue with Google.',
           )
         } else {
           setError('Login failed. Please try again.')
@@ -120,16 +120,17 @@ export default function LoginPage() {
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-2">
-              Mobile Number
+              Email
             </label>
             <div className="relative group">
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-[#FAD400] transition-colors" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-[#FAD400] transition-colors" />
               <input
-                type="tel"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className={inputWithIcon}
-                placeholder="Enter mobile number"
+                placeholder="Enter email address"
+                autoComplete="email"
                 required
               />
             </div>
@@ -158,12 +159,12 @@ export default function LoginPage() {
           </div>
 
           <div className="flex justify-end">
-            <a
-              href="#"
+            <Link
+              href="/forgot-password"
               className="text-sm text-neutral-700 hover:text-[#FAD400] font-medium transition-colors"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           <button
@@ -195,14 +196,6 @@ export default function LoginPage() {
         </div>
 
         <GoogleSignInButton callbackUrl="/dashboard" />
-
-        <button
-          type="button"
-          className={`${MKT_BTN_SECONDARY} w-full mt-4`}
-        >
-          <Sparkles className="w-5 h-5 text-[#FAD400]" />
-          Login with OTP
-        </button>
 
         <p className="mt-8 text-center text-sm text-neutral-600 font-light">
           Don&apos;t have an account?{' '}

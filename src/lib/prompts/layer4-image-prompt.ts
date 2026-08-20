@@ -45,10 +45,13 @@ You will receive the brand's own product/logo photos as reference images alongsi
 - DO NOT redesign the product itself.
 - CHANGE only the scene: background, lighting, camera angle, atmosphere, and composition to match the brief.`;
 
-export function buildLayer4SystemPrompt(brandDNA: BrandDNA): string {
+export function buildLayer4SystemPrompt(
+   brandDNA: BrandDNA,
+   basePrompt: string = BASE_SYSTEM_PROMPT,
+): string {
    const archetype = getIndustryArchetype(brandDNA.industry, brandDNA.productType);
 
-   return `${BASE_SYSTEM_PROMPT}
+   return `${basePrompt}
 
 SCENE VOCABULARY (suggestions — use what fits):
 ${getSceneVocabularyPrompt(archetype)}

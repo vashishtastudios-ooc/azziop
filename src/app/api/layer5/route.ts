@@ -4,7 +4,10 @@ import { db } from '~/server/db';
 import { generateImage, generateImageWithReferences, toImageAspectRatio as toGeminiAspectRatio } from '~/lib/openrouter';
 import { canAccessLayer } from '~/lib/quota';
 import { spendForAction, refundForAction, costForAction } from '~/lib/credits';
-import { CREDIT_COSTS, MAX_IMAGE_BATCH_SIZE } from '~/lib/pricing';
+import { MAX_IMAGE_BATCH_SIZE } from '~/lib/pricing';
+import { getAiRuntimeSettings } from '~/lib/aiRuntimeSettings';
+import { getCreditCosts } from '~/lib/billingRuntime';
+import { getFeatureFlags } from '~/lib/featureFlags';
 /** MIME types Gemini image generation accepts as inline references (not SVG). */
 const GEMINI_REFERENCE_MIME = new Set([
     'image/png',
@@ -148,15 +151,32 @@ export async function POST(req: NextRequest) {
             );
         }
 
+        const flags = await getFeatureFlags();
+        if (!flags.generateImages) {
+            return NextResponse.json(
+                { error: 'Image generation is temporarily disabled.' },
+                { status: 503 }
+            );
+        }
+
+        const aiSettings = await getAiRuntimeSettings();
+        if (aiSettings.generationPaused) {
+            return NextResponse.json(
+                { error: 'Image generation is temporarily paused. Please try again later.' },
+                { status: 503 }
+            );
+        }
+
         // Reserve credits up front (atomic) so concurrent jobs can't overspend.
         const reserve = await spendForAction(userId, 'image', requestedCount);
         if (!reserve.ok) {
+            const costs = await getCreditCosts();
             return NextResponse.json(
                 {
                     error: 'Not enough credits',
-                    required: costForAction('image', requestedCount),
+                    required: await costForAction('image', requestedCount),
                     balance: reserve.balance,
-                    creditCostPerImage: CREDIT_COSTS.image,
+                    creditCostPerImage: costs.image,
                     upgradeUrl: '/pricing',
                 },
                 { status: 402 }

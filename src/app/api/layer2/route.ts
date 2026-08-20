@@ -5,7 +5,7 @@ import { z } from 'zod';
 import type { BrandDNA, WebsiteData } from '~/types';
 import { canAccessLayer } from '~/lib/quota';
 import { spendForAction, refundForAction, costForAction } from '~/lib/credits';
-import { CREDIT_COSTS } from '~/lib/pricing';
+import { getCreditCosts } from '~/lib/billingRuntime';
 import {
   buildBusinessOverview,
   generateLayer2Campaigns,
@@ -75,12 +75,13 @@ export async function POST(req: NextRequest) {
     // Reserve credits up front (atomic) so concurrent requests can't overspend.
     const reserve = await spendForAction(userId, 'campaign', 1);
     if (!reserve.ok) {
+      const costs = await getCreditCosts();
       return NextResponse.json(
         {
           error: 'Not enough credits',
-          required: costForAction('campaign', 1),
+          required: await costForAction('campaign', 1),
           balance: reserve.balance,
-          creditCost: CREDIT_COSTS.campaign,
+          creditCost: costs.campaign,
           upgradeUrl: '/pricing',
         },
         { status: 402 }

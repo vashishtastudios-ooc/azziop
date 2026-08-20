@@ -6,6 +6,7 @@
 // ============================================
 
 import { env } from '~/env';
+import { getAiRuntimeSettings } from '~/lib/aiRuntimeSettings';
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_IMAGE_MODEL = 'openai/gpt-image-2';
@@ -13,12 +14,20 @@ const DEFAULT_IMAGE_MODEL = 'openai/gpt-image-2';
 // so the underlying model stays the same while removing the direct Google dependency.
 const DEFAULT_TEXT_MODEL = 'google/gemini-2.5-flash';
 
-function getImageModel(): string {
-  return process.env.OPENROUTER_IMAGE_MODEL || DEFAULT_IMAGE_MODEL;
+async function getImageModel(): Promise<string> {
+  const settings = await getAiRuntimeSettings();
+  return settings.imageModel || process.env.OPENROUTER_IMAGE_MODEL || DEFAULT_IMAGE_MODEL;
 }
 
-function getTextModel(): string {
-  return process.env.OPENROUTER_TEXT_MODEL || DEFAULT_TEXT_MODEL;
+async function getTextModel(): Promise<string> {
+  const settings = await getAiRuntimeSettings();
+  return settings.textModel || process.env.OPENROUTER_TEXT_MODEL || DEFAULT_TEXT_MODEL;
+}
+
+async function getImageSize(override?: ImageSize): Promise<ImageSize> {
+  if (override) return override;
+  const settings = await getAiRuntimeSettings();
+  return settings.imageSize || DEFAULT_IMAGE_SIZE;
 }
 
 function getOpenRouterKey(): string {
@@ -92,16 +101,16 @@ interface OpenRouterImageResponse {
   data?: Array<{ b64_json?: string }>;
 }
 
-function buildRequestBody(
+async function buildRequestBody(
   prompt: string,
   options?: ImageGenerationOptions,
   inputReferences?: OpenRouterInputReference[],
-): OpenRouterImageRequest {
+): Promise<OpenRouterImageRequest> {
   const body: OpenRouterImageRequest = {
-    model: getImageModel(),
+    model: await getImageModel(),
     prompt,
     output_format: 'png',
-    resolution: options?.imageSize ?? DEFAULT_IMAGE_SIZE,
+    resolution: await getImageSize(options?.imageSize),
   };
   if (options?.aspectRatio) body.aspect_ratio = options.aspectRatio;
   if (options?.useProModel) body.quality = 'high';
@@ -161,7 +170,11 @@ export async function generateImage(
   prompt: string,
   options?: ImageGenerationOptions,
 ): Promise<string> {
-  return callOpenRouterImage(buildRequestBody(prompt, options));
+  const settings = await getAiRuntimeSettings();
+  if (settings.generationPaused) {
+    throw new Error('Image generation is paused by an admin. Try again later.');
+  }
+  return callOpenRouterImage(await buildRequestBody(prompt, options));
 }
 
 // Generate an image using reference product images (image-to-image) so the
@@ -171,8 +184,12 @@ export async function generateImageWithReferences(
   referenceImages: { base64: string; mimeType: string }[],
   options?: ImageGenerationOptions,
 ): Promise<string> {
+  const settings = await getAiRuntimeSettings();
+  if (settings.generationPaused) {
+    throw new Error('Image generation is paused by an admin. Try again later.');
+  }
   const inputReferences = referenceImages.map(toInputReference);
-  return callOpenRouterImage(buildRequestBody(prompt, options, inputReferences));
+  return callOpenRouterImage(await buildRequestBody(prompt, options, inputReferences));
 }
 
 // ─── Text / multimodal chat completions ─────────────────────
@@ -215,9 +232,10 @@ export async function callOpenRouterChat(
   options?: ChatCompletionOptions,
 ): Promise<string> {
   const apiKey = getOpenRouterKey();
+  const model = await getTextModel();
 
   const body: Record<string, unknown> = {
-    model: getTextModel(),
+    model,
     messages: [{ role: 'user', content: parts.map(toChatContent) }],
   };
   if (options?.temperature !== undefined) body.temperature = options.temperature;

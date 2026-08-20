@@ -3,6 +3,7 @@ import { auth } from '~/server/auth';
 import { db } from '~/server/db';
 import { getModel } from '~/lib/gemini';
 import { buildLayer4SystemPrompt, buildLayer4UserPrompt } from '~/lib/prompts/layer4-image-prompt';
+import { getActivePromptBody } from '~/lib/promptRuntime';
 import { canAccessLayer } from '~/lib/quota';
 import type { BrandDNA, SocialCreative, CampaignStrategy } from '~/types';
 
@@ -53,7 +54,10 @@ export async function POST(req: NextRequest) {
 
     // Generate image prompts for each creative
     const model = getModel('layer4');
-    const systemPrompt = buildLayer4SystemPrompt(brandDNA as BrandDNA);
+    const systemPrompt = buildLayer4SystemPrompt(
+      brandDNA as BrandDNA,
+      await getActivePromptBody('layer4'),
+    );
     const imagePrompts = [];
 
     for (let i = 0; i < creatives.length; i++) {

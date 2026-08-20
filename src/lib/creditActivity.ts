@@ -1,8 +1,10 @@
 /** Human-readable labels for CreditLedger `reason` values. */
 export function creditReasonLabel(reason: string): string {
   switch (reason) {
-    case "plan_grant":
-      return "Plan credits";
+    case "admin_grant":
+      return "Admin credit grant";
+    case "admin_adjust":
+      return "Admin credit adjustment";
     case "topup":
       return "Credit pack purchase";
     case "spend_image":

@@ -1,6 +1,6 @@
 import { db } from "~/server/db";
 import { grantCredits } from "~/lib/credits";
-import { monthlyCreditsForPlan } from "~/lib/pricing";
+import { getMonthlyCreditsForPlan } from "~/lib/billingRuntime";
 
 export type GoogleProfileInput = {
   email?: string | null;
@@ -70,7 +70,7 @@ export async function resolveGoogleSignIn(profile: GoogleProfileInput) {
     // One-time free-trial credits.
     await grantCredits({
       userId: created.id,
-      amount: monthlyCreditsForPlan("free"),
+      amount: await getMonthlyCreditsForPlan("free"),
       reason: "plan_grant",
       sourceId: `grant:free-signup:${created.id}`,
       metadata: { planId: "free", source: "google" },

@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import { motion, useInView } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { HeroMockup } from '~/components/marketing/HeroMockup';
+import { HeroCreativeSlider } from '~/components/marketing/HeroCreativeSlider';
 import { useCountUp } from '~/hooks/useCountUp';
 
 const TRUST_AVATARS = [
@@ -170,9 +170,9 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* Right column — living mockup */}
+          {/* Right column — auto-rotating creative showcase */}
           <div className="lg:pl-4">
-            <HeroMockup />
+            <HeroCreativeSlider />
           </div>
         </div>
       </div>

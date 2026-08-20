@@ -3,12 +3,21 @@ import path from 'path';
 import { readFile } from 'fs/promises';
 import { auth } from '~/server/auth';
 import { generateImageWithReferences } from '~/lib/openrouter';
+import { getFeatureFlags } from '~/lib/featureFlags';
 
 export async function POST(req: NextRequest) {
     try {
         const session = await auth();
         if (!session?.user?.id) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const flags = await getFeatureFlags();
+        if (!flags.cloneCreative) {
+            return NextResponse.json(
+                { error: 'Clone & Copy is temporarily disabled.' },
+                { status: 503 },
+            );
         }
 
         const {

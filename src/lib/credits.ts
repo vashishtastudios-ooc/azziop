@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { db } from "~/server/db";
-import { CREDIT_COSTS, type CreditAction } from "~/lib/pricing";
+import { type CreditAction } from "~/lib/pricing";
+import { getCreditCosts } from "~/lib/billingRuntime";
 
 /**
  * Append-only credit ledger.
@@ -150,8 +151,9 @@ export async function spendCredits(input: SpendInput): Promise<SpendResult> {
   );
 }
 
-export function costForAction(action: CreditAction, count = 1): number {
-  return CREDIT_COSTS[action] * Math.max(0, count);
+export async function costForAction(action: CreditAction, count = 1): Promise<number> {
+  const costs = await getCreditCosts();
+  return costs[action] * Math.max(0, count);
 }
 
 /** Convenience: spend credits for a metered action (image, campaign). */
@@ -162,7 +164,7 @@ export async function spendForAction(
 ): Promise<SpendResult> {
   return spendCredits({
     userId,
-    amount: costForAction(action, count),
+    amount: await costForAction(action, count),
     reason: `spend_${action}`,
     metadata: { action, count },
   });
@@ -175,7 +177,7 @@ export async function refundForAction(
   count = 1,
   metadata?: Record<string, unknown>,
 ): Promise<void> {
-  const amount = costForAction(action, count);
+  const amount = await costForAction(action, count);
   if (amount <= 0) return;
   await grantCredits({
     userId,

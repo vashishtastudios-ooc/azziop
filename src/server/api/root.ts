@@ -5,6 +5,7 @@ import { campaignRouter } from "./routers/campaign";
 import { creativeRouter } from "./routers/creative";
 import { projectRouter } from "./routers/project";
 import { schedulerRouter } from "./routers/scheduler";
+import { adminRouter } from "./routers/admin";
 
 
 /**
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   campaign: campaignRouter,
   creative: creativeRouter,
   scheduler: schedulerRouter,
+  admin: adminRouter,
 });
 
 // export type definition of API

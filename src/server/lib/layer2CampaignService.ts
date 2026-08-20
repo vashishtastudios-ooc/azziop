@@ -3,10 +3,10 @@ import { z } from "zod";
 import { getModel } from "~/lib/gemini";
 import {
   LAYER2_RESPONSE_SCHEMA,
-  LAYER2_SYSTEM_PROMPT,
   buildLayer2UserPrompt,
   type PreviousCampaignContext,
 } from "~/lib/prompts/layer2-campaign-strategy";
+import { getActivePromptBody } from "~/lib/promptRuntime";
 import type { BrandDNA, CampaignStrategy, WebsiteData } from "~/types";
 
 const generatedCampaignSchema = z.object({
@@ -168,7 +168,7 @@ export async function generateLayer2Campaigns(params: {
     );
 
     const response = await model.generateContent([
-      { text: LAYER2_SYSTEM_PROMPT },
+      { text: await getActivePromptBody("layer2") },
       { text: userPromptText },
     ]);
 

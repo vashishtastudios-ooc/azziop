@@ -18,6 +18,8 @@ model User {
   email        String?   @unique
   mobile       String?   @unique
   passwordHash String?
+  /// "user" | "admin" — admin is also granted if email is in ADMIN_EMAILS.
+  role         String    @default("user")
   avatarUrl    String?
   metaAccessToken String?
   metaTokenExpiresAt DateTime?
@@ -43,6 +45,23 @@ model User {
   scheduledSocialPosts  ScheduledSocialPost[]
   usageRecords          UsageRecord[]
   creditLedger          CreditLedger[]
+  passwordResetTokens   PasswordResetToken[]
+}
+
+// ─── Password reset tokens ────────────────────
+// Stores a SHA-256 hash of the reset token (never the raw token). The raw token
+// only ever exists in the emailed link.
+
+model PasswordResetToken {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 // ─── Credit ledger (append-only) ──────────────
@@ -266,4 +285,32 @@ model UsageRecord {
 
   @@unique([userId, monthKey])
   @@index([userId])
+}
+
+// ─── Runtime app settings (admin-editable) ────
+// Key/value JSON. Used for AI model overrides so they survive deploys
+// without editing .env. Env vars remain the fallback defaults.
+
+model AppSetting {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Admin-editable prompt versions ───────────
+// Active row (isActive=true) overrides the code default for that layer.
+// Previous rows stay for rollback.
+
+model PromptVersion {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  layer     String
+  body      String
+  note      String?
+  createdBy String?
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([layer, isActive])
+  @@index([layer, createdAt])
 }

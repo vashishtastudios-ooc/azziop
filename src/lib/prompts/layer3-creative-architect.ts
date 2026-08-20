@@ -61,10 +61,13 @@ OUTPUT FORMAT (JSON array only):
   }
 ]`;
 
-export function buildLayer3SystemPrompt(brandDNA: BrandDNA): string {
+export function buildLayer3SystemPrompt(
+  brandDNA: BrandDNA,
+  basePrompt: string = BASE_SYSTEM_PROMPT,
+): string {
   const archetype = getIndustryArchetype(brandDNA.industry, brandDNA.productType);
 
-  return `${BASE_SYSTEM_PROMPT}
+  return `${basePrompt}
 
 CONCEPT INSPIRATION (optional — draw from these, do not copy verbatim):
 ${getCreativeArchetypesPrompt(archetype)}

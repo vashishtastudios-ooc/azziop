@@ -46,6 +46,16 @@ export const env = createEnv({
     // Secret for /api/cron/* — validated at request time in production, not at build.
     // Set on Vercel (min 16 chars); optional locally so `npm run build` works without it.
     CRON_SECRET: z.string().min(16).optional(),
+    // SMTP (Hostinger email) — used for password-reset emails. Optional so the
+    // app builds without it; if unset, reset emails are logged to the server
+    // console instead of sent.
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.coerce.number().optional(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
+    SMTP_FROM: z.string().optional(),
+    // Comma-separated emails that always have admin access (bootstrap).
+    ADMIN_EMAILS: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -80,6 +90,12 @@ export const env = createEnv({
     RAZORPAY_PLAN_AGENCY_YEARLY: process.env.RAZORPAY_PLAN_AGENCY_YEARLY,
     RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,
     CRON_SECRET: process.env.CRON_SECRET,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    SMTP_FROM: process.env.SMTP_FROM,
+    ADMIN_EMAILS: process.env.ADMIN_EMAILS,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_FIREBASE_VAPID_KEY: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
   },

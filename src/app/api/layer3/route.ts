@@ -3,6 +3,7 @@ import { auth } from '~/server/auth';
 import { db } from '~/server/db';
 import { getModel } from '~/lib/gemini';
 import { buildLayer3SystemPrompt, buildLayer3UserPrompt } from '~/lib/prompts/layer3-creative-architect';
+import { getActivePromptBody } from '~/lib/promptRuntime';
 import { ALLOWED_LAYOUTS, ALLOWED_OVERLAYS } from '~/types';
 import type { BrandDNA, CampaignStrategy } from '~/types';
 
@@ -50,7 +51,10 @@ export async function POST(req: NextRequest) {
 
     // Generate creatives using Gemini
     const model = getModel('layer3');
-    const systemPrompt = buildLayer3SystemPrompt(brandDNA as BrandDNA);
+    const systemPrompt = buildLayer3SystemPrompt(
+      brandDNA as BrandDNA,
+      await getActivePromptBody('layer3'),
+    );
     const userPrompt = buildLayer3UserPrompt(
       campaign as CampaignStrategy,
       brandDNA as BrandDNA,

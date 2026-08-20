@@ -90,7 +90,6 @@ export function CreativesPage() {
   const projectIdFromQuery = searchParams.get('projectId') ?? undefined;
   const campaignIdFromQuery = searchParams.get('campaignId') ?? undefined;
   const [isGeneratingImages, setIsGeneratingImages] = useState(false);
-  const [showGenNotice, setShowGenNotice] = useState(false);
   const [creativeIds, setCreativeIds] = useState<string[]>([]);
 
   // Clone & Copy modal state
@@ -155,6 +154,11 @@ export function CreativesPage() {
   const setEditingCreative = usePipelineStore((state: any) => state.setEditingCreative);
 
   const trpcUtils = api.useUtils();
+  const { data: productConfig } = api.user.productConfig.useQuery(undefined, {
+    staleTime: 30_000,
+  });
+  const imageCreditCost = productConfig?.costs.image ?? CREDIT_COSTS.image;
+  const flags = productConfig?.flags;
 
   const { data: creativeData, isLoading: isLoadingCreativeData } =
     api.creative.getLatestProjectCreatives.useQuery({ projectId: projectIdFromQuery, campaignId: campaignIdFromQuery }, {
@@ -248,7 +252,7 @@ export function CreativesPage() {
       return;
     }
 
-    const requiredCredits = CREDIT_COSTS.image * prompts.length;
+    const requiredCredits = imageCreditCost * prompts.length;
     if (creditBalance !== null && creditBalance < requiredCredits) {
       alert(
         `Not enough credits. Generating ${prompts.length} image(s) costs ${requiredCredits} credits — your balance is ${creditBalance}. Top up in Pricing.`,
@@ -257,7 +261,6 @@ export function CreativesPage() {
     }
 
     setIsGeneratingImages(true);
-    setShowGenNotice(true);
     try {
       const promptsWithIds = prompts.map((p: ImagePrompt) => ({
         ...p,
@@ -636,29 +639,27 @@ export function CreativesPage() {
   return (
     <div className="min-h-screen pt-8 pb-8 px-4 lg:px-8">
       <AnimatePresence>
-        {showGenNotice && (
+        {isGeneratingImages && (
           <motion.div
-            key="gen-notice"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+            key="gen-status"
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.25 }}
+            className="fixed top-20 left-1/2 z-50 -translate-x-1/2 px-4 w-full max-w-md pointer-events-none"
           >
-            <div
-              className="flex flex-col items-center gap-4 px-8 py-6 rounded-2xl border border-neutral-200 bg-white/95 shadow-2xl pointer-events-auto text-center"
-              style={{ backdropFilter: 'blur(14px)', maxWidth: '420px', width: 'calc(100vw - 2rem)' }}
-            >
-              <p className="text-neutral-800 text-sm leading-relaxed" style={{ fontStyle: 'italic', fontWeight: 500 }}>
-                this will take a little while — go take a walk, talk to your gf, your daughter, or as a last resort, your wife 🚶
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowGenNotice(false)}
-                className="text-xs text-neutral-600 hover:text-white transition-colors px-4 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-100"
-              >
-                ok
-              </button>
+            <div className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white/95 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)] px-4 py-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FAD400]/20">
+                <Loader2 className="h-4 w-4 animate-spin text-neutral-900" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-display font-semibold text-neutral-900">
+                  Generating your creatives
+                </p>
+                <p className="text-xs text-neutral-500 font-light">
+                  Usually 30–90 seconds. You can keep browsing this page.
+                </p>
+              </div>
             </div>
           </motion.div>
         )}
@@ -707,53 +708,64 @@ export function CreativesPage() {
               </div>
 
               {/* Generate Images Button */}
-              {!generatedImages.length && (
+              {flags?.generateImages !== false && !generatedImages.length && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleGenerateAllImages}
+                    disabled={isGeneratingImages}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold text-sm marketing-cta-glow transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    {isGeneratingImages ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <ImageIcon className="w-4 h-4" />
+                        Generate AI Images
+                      </>
+                    )}
+                  </button>
+                  {isGeneratingImages && (
+                    <p className="mt-2 text-center text-[11px] text-neutral-500 font-light">
+                      This usually takes 30–90 seconds.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {flags?.cloneCreative !== false && (
                 <button
                   type="button"
-                  onClick={handleGenerateAllImages}
-                  disabled={isGeneratingImages}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#FAD400] text-neutral-900 font-display font-semibold text-sm marketing-cta-glow transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+                  onClick={() => {
+                    setShowCloneModal(true);
+                    setCloneReferenceImage(null);
+                    setCloneResult(null);
+                    setCloneError(null);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  {isGeneratingImages ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <ImageIcon className="w-4 h-4" />
-                      Generate AI Images
-                    </>
-                  )}
+                  <Copy className="w-4 h-4" />
+                  Clone & Copy
                 </button>
               )}
 
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCloneModal(true);
-                  setCloneReferenceImage(null);
-                  setCloneResult(null);
-                  setCloneError(null);
-                }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Copy className="w-4 h-4" />
-                Clone & Copy
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setShowInfographicModal(true);
-                  setInfographicError(null);
-                  setProductInfographicUrl('');
-                }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <LayoutTemplate className="w-4 h-4" />
-                Product Infographic
-              </button>
+              {flags?.productInfographic !== false && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowInfographicModal(true);
+                    setInfographicError(null);
+                    setProductInfographicUrl('');
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-300 bg-white text-neutral-900 font-display font-semibold text-sm hover:border-[#FAD400]/50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <LayoutTemplate className="w-4 h-4" />
+                  Product Infographic
+                </button>
+              )}
 
               <div className="card p-4 bg-[#FAD400]/10 border-[#FAD400]/25 sm:col-span-2 lg:col-span-1">
                 <div className="flex items-center gap-2 mb-2">
@@ -787,6 +799,13 @@ export function CreativesPage() {
                     onClick={() => handleEditCreative(index)}
                   >
                     {renderCreativeCard(index)}
+
+                    {isGeneratingImages && !getImageForCreative(index) && (
+                      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-white/70 backdrop-blur-[2px]">
+                        <Loader2 className="h-5 w-5 animate-spin text-neutral-900" />
+                        <span className="text-[11px] font-medium text-neutral-600">Generating…</span>
+                      </div>
+                    )}
 
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-30">
                       <button

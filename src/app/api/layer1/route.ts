@@ -5,7 +5,8 @@ import { wipeProjectCampaignData } from '~/server/lib/wipeProjectCampaignData';
 import { scrapeWebsite } from '~/lib/scraper';
 import { screenshotExtract } from '~/lib/screenshotExtractor';
 import { getModel } from '~/lib/gemini';
-import { LAYER1_SYSTEM_PROMPT, buildLayer1UserPrompt } from '~/lib/prompts/layer1-brand-dna';
+import { buildLayer1UserPrompt } from '~/lib/prompts/layer1-brand-dna';
+import { getActivePromptBody } from '~/lib/promptRuntime';
 import { checkProjectLimit } from '~/lib/quota';
 
 export async function POST(req: NextRequest) {
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
     });
 
     const textResponse = await model.generateContent([
-      { text: LAYER1_SYSTEM_PROMPT },
+      { text: await getActivePromptBody('layer1') },
       { text: userPrompt },
     ]);
 

@@ -1,11 +1,11 @@
 import { db } from "~/server/db";
 import {
   DEFAULT_PLAN_ID,
-  planById,
   effectivePlanId,
   type PlanId,
 } from "~/lib/pricing";
 import { getBalance } from "~/lib/credits";
+import { getEffectivePlan } from "~/lib/billingRuntime";
 
 /**
  * Resolve the plan a user is *actually* entitled to right now. Honors
@@ -37,7 +37,7 @@ export async function checkProjectLimit(
   increment = 1,
 ): Promise<ProjectLimitResult> {
   const planId = await resolveUserPlan(userId);
-  const limit = planById(planId).limits.projects;
+  const limit = (await getEffectivePlan(planId)).limits.projects;
   const used = await db.project.count({ where: { userId } });
   return {
     allowed: limit === null || used + increment <= limit,
@@ -59,7 +59,7 @@ export async function canAccessLayer(
   layerNumber: number,
 ): Promise<LayerAccessResult> {
   const planId = await resolveUserPlan(userId);
-  const maxLayer = planById(planId).limits.aiLayers;
+  const maxLayer = (await getEffectivePlan(planId)).limits.aiLayers;
   return {
     allowed: maxLayer === null || layerNumber <= maxLayer,
     planId,
@@ -94,7 +94,7 @@ export async function getAccountUsage(userId: string): Promise<AccountUsage> {
       ? (user.planId as PlanId)
       : DEFAULT_PLAN_ID;
   const planId = user ? effectivePlanId(user) : DEFAULT_PLAN_ID;
-  const plan = planById(planId);
+  const plan = await getEffectivePlan(planId);
 
   const projectsUsed = await db.project.count({ where: { userId } });
   const creditBalance = user?.creditBalance ?? (await getBalance(userId));

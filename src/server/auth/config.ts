@@ -17,14 +17,14 @@ const providers = [
   CredentialsProvider({
     name: "Credentials",
     credentials: {
-      mobile: { label: "Mobile", type: "text" },
+      email: { label: "Email", type: "email" },
       password: { label: "Password", type: "password" },
     },
     async authorize(credentials) {
       try {
         const identifier =
-          typeof credentials?.mobile === "string"
-            ? credentials.mobile.trim()
+          typeof credentials?.email === "string"
+            ? credentials.email.trim()
             : undefined;
         const password =
           typeof credentials?.password === "string"

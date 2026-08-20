@@ -131,6 +131,11 @@ function RegisterPageContent() {
         e.preventDefault()
         setError('')
 
+        if (!email.trim()) {
+            setError('Email is required')
+            return
+        }
+
         if (password !== confirmPassword) {
             setError('Passwords do not match')
             return
@@ -144,13 +149,13 @@ function RegisterPageContent() {
         try {
             await registerMutation.mutateAsync({
                 name: name.trim(),
-                mobile: mobile.trim(),
-                email: email.trim() || undefined,
+                email: email.trim(),
+                mobile: mobile.trim() || undefined,
                 password,
             })
 
             const signInResult = await signIn('credentials', {
-                mobile: mobile.trim(),
+                email: email.trim(),
                 password,
                 redirect: false,
             })
@@ -249,25 +254,7 @@ function RegisterPageContent() {
 
                         <div>
                             <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                Mobile Number
-                            </label>
-                            <div className="relative group">
-                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-[#FAD400] transition-colors" />
-                                <input
-                                    type="tel"
-                                    value={mobile}
-                                    onChange={(e) => setMobile(e.target.value)}
-                                    className={inputWithIcon}
-                                    placeholder="Enter mobile number"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                Email{' '}
-                                <span className="text-neutral-400 font-normal">(optional)</span>
+                                Email
                             </label>
                             <div className="relative group">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-[#FAD400] transition-colors" />
@@ -277,6 +264,26 @@ function RegisterPageContent() {
                                     onChange={(e) => setEmail(e.target.value)}
                                     className={inputWithIcon}
                                     placeholder="Enter email address"
+                                    autoComplete="email"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-neutral-700 mb-2">
+                                Mobile Number{' '}
+                                <span className="text-neutral-400 font-normal">(optional)</span>
+                            </label>
+                            <div className="relative group">
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-[#FAD400] transition-colors" />
+                                <input
+                                    type="tel"
+                                    value={mobile}
+                                    onChange={(e) => setMobile(e.target.value)}
+                                    className={inputWithIcon}
+                                    placeholder="Enter mobile number"
+                                    autoComplete="tel"
                                 />
                             </div>
                         </div>

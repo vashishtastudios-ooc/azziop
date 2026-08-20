@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
+import { isAdminAccount } from "~/lib/admin";
 
 /**
  * 1. CONTEXT
@@ -131,3 +132,27 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Admin-only procedure. Checks DB role and ADMIN_EMAILS bootstrap list.
+ */
+export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const user = await ctx.db.user.findUnique({
+    where: { id: ctx.session.user.id },
+    select: { id: true, email: true, role: true },
+  });
+
+  if (!user || !isAdminAccount(user)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
+  }
+
+  return next({
+    ctx: {
+      session: ctx.session,
+      admin: user,
+    },
+  });
+});
